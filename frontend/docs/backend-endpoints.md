@@ -98,20 +98,38 @@ Possible errors:
 
 ## Activity Endpoints
 
+This is the legacy activity shape. Current clients depend on it, so these two routes stay as they are.
+
+```ts
+type ActivityLog = {
+  id: string; // UUID for new rows; older rows may still be a numeric string
+  action?: string;
+  info?: string;
+  when: string; // ISO datetime. Tasks use createdAt; activity still uses when.
+};
+
+type GetActivityResponse = ActivityLog[]; // raw array, not { data: ActivityLog[] }
+type CreateActivityResponse = ActivityLog; // raw object, not { data: ActivityLog }
+```
+
+New endpoints should return `{ data }` and use `createdAt`. Do not copy `when` or the unwrapped body. Moving activity itself onto that shape needs a versioned path first, so the clients of `GET /activity` and `POST /activity` keep working.
+
 ### GET /activity
 
 Fetch activity logs.
 
-```ts
-type ActivityLog = {
-  id: string;
-  action?: string;
-  info?: string;
-  when: string; // ISO datetime
-};
+With no query, the response is the full log, oldest first.
 
-type GetActivityResponse = ActivityLog[];
+```ts
+type GetActivityQuery = {
+  limit?: number; // optional, integer, 1–100
+};
 ```
+
+When `limit` is set, the response contains at most that many entries, newest first. A limit above 100 is rejected. The stored file stays oldest first either way.
+
+Possible errors:
+- `400` when `limit` is present but is not an integer from 1 to 100.
 
 ### POST /activity
 
@@ -122,8 +140,6 @@ type CreateActivityRequest = {
   action: string; // required, trimmed, 1–100 characters
   info?: string; // optional, trimmed, at most 1000 characters
 };
-
-type CreateActivityResponse = ActivityLog;
 ```
 
 Possible errors:
@@ -131,10 +147,6 @@ Possible errors:
 - `400` when `action` is missing, not a string, empty, or longer than 100 characters.
 - `400` when `info` is present but not a string, or longer than 1000 characters.
 - `400` when the body contains unsupported fields.
-
-Notes:
-- New entries use a UUID `id`. Older rows may still have a numeric string id.
-- Response shape for activity endpoints is raw objects/arrays (not wrapped in `data`).
 
 ## Reports Endpoints
 

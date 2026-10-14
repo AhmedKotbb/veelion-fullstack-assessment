@@ -3,6 +3,7 @@ const HttpError = require('../../../utils/httpError');
 const ALLOWED_FIELDS = ['action', 'info'];
 const ACTION_MAX_LENGTH = 100;
 const INFO_MAX_LENGTH = 1000;
+const ACTIVITY_LIMIT_MAX = 100;
 
 function validatePayloadShape(payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -64,6 +65,27 @@ function normalizeInfoIfPresent(payload, normalized) {
   normalized.info = trimmedInfo;
 }
 
+function parseActivityLimit(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) {
+    throw new HttpError(400, `"limit" must be a positive integer up to ${ACTIVITY_LIMIT_MAX}.`, {
+      field: 'limit',
+    });
+  }
+
+  const limit = Number(value);
+  if (limit > ACTIVITY_LIMIT_MAX) {
+    throw new HttpError(400, `"limit" must be at most ${ACTIVITY_LIMIT_MAX}.`, {
+      field: 'limit',
+    });
+  }
+
+  return limit;
+}
+
 function validateCreateActivity(payload) {
   validatePayloadShape(payload);
   ensureNoUnknownFields(payload);
@@ -77,4 +99,5 @@ function validateCreateActivity(payload) {
 
 module.exports = {
   validateCreateActivity,
+  parseActivityLimit,
 };

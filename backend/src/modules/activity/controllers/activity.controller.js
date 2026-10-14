@@ -1,18 +1,19 @@
-const aSvc = require('../services/activity.service');
-const { validateCreateActivity } = require('../utils/activityValidator');
+const activityService = require('../services/activity.service');
+const { parseActivityLimit, validateCreateActivity } = require('../utils/activityValidator');
 
-async function get_activity(req, res) {
-  const x = await aSvc.getAllActivity();
-  res.json(x);
+async function listActivity(req, res) {
+  const limit = parseActivityLimit(req.query.limit);
+  const entries = await activityService.getAllActivity(limit);
+  res.json(entries);
 }
 
-async function addActivity(req, res) {
+async function createActivity(req, res) {
   const payload = validateCreateActivity(req.body);
-  const made = await aSvc.createNewActivity(payload);
-  res.status(201).json(made);
+  const entry = await activityService.createNewActivity(payload);
+  res.status(201).json(entry);
 }
 
 module.exports = {
-  get_activity,
-  addActivity,
+  listActivity,
+  createActivity,
 };

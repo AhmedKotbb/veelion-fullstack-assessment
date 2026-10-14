@@ -6,8 +6,14 @@ const { readJsonArray, modifyJsonArray, ensureJsonArrayFile } = require('../../.
 
 const ACTIVITY_FILE_PATH = path.join(DATA_DIR, 'activity.json');
 
-async function getAllActivity() {
-  return readJsonArray(ACTIVITY_FILE_PATH);
+async function getAllActivity(limit) {
+  const entries = await readJsonArray(ACTIVITY_FILE_PATH);
+
+  if (limit === undefined) {
+    return entries;
+  }
+
+  return entries.slice(-limit).reverse();
 }
 
 async function createNewActivity(payload) {
