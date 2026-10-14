@@ -1,5 +1,6 @@
 const path = require('node:path');
 
+const { DATA_DIR } = require('../../../config');
 const { createId } = require('../../../utils/id');
 const {
   readJsonArray,
@@ -7,8 +8,22 @@ const {
   ensureJsonArrayFile,
 } = require('../../../utils/jsonStore');
 const HttpError = require('../../../utils/httpError');
+const activityService = require('../../activity/services/activity.service');
 
-const TASKS_FILE_PATH = path.join(process.cwd(), 'data', 'tasks.json');
+const TASKS_FILE_PATH = path.join(DATA_DIR, 'tasks.json');
+
+function recordTaskActivity(action, task) {
+  activityService.createNewActivity({
+    action,
+    info: `${task.id} ${task.title}`,
+  });
+}
+
+function saveTaskChange(mutator, action) {
+  return modifyJsonArray(TASKS_FILE_PATH, mutator, (task) => {
+    recordTaskActivity(action, task);
+  });
+}
 
 function buildTaskRecord(payload) {
   const now = new Date().toISOString();
@@ -38,15 +53,15 @@ async function getTaskById(taskId) {
 }
 
 async function createTask(payload) {
-  return modifyJsonArray(TASKS_FILE_PATH, (tasks) => {
+  return saveTaskChange((tasks) => {
     const newTask = buildTaskRecord(payload);
     tasks.push(newTask);
     return newTask;
-  });
+  }, 'task.created');
 }
 
 async function updateTask(taskId, updates) {
-  return modifyJsonArray(TASKS_FILE_PATH, (tasks) => {
+  return saveTaskChange((tasks) => {
     const taskIndex = tasks.findIndex((item) => item.id === taskId);
 
     if (taskIndex === -1) {
@@ -69,11 +84,11 @@ async function updateTask(taskId, updates) {
 
     tasks[taskIndex] = updatedTask;
     return updatedTask;
-  });
+  }, 'task.updated');
 }
 
 async function deleteTask(taskId) {
-  return modifyJsonArray(TASKS_FILE_PATH, (tasks) => {
+  return saveTaskChange((tasks) => {
     const taskIndex = tasks.findIndex((item) => item.id === taskId);
 
     if (taskIndex === -1) {
@@ -82,7 +97,7 @@ async function deleteTask(taskId) {
 
     const [removedTask] = tasks.splice(taskIndex, 1);
     return removedTask;
-  });
+  }, 'task.deleted');
 }
 
 function ensureTasksFile() {

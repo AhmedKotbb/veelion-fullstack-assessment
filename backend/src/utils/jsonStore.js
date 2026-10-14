@@ -74,12 +74,17 @@ async function writeJsonArray(filePath, data) {
   return enqueueFileOperation(filePath, () => writeJsonArrayToDisk(filePath, data));
 }
 
-// Reads the list, lets the caller change it, then saves it, all as one turn.
-async function modifyJsonArray(filePath, mutator) {
+// Reads the list, lets the caller change it, saves it, then runs afterSave before the next turn.
+async function modifyJsonArray(filePath, mutator, afterSave) {
   return enqueueFileOperation(filePath, async () => {
     const items = await readJsonArrayFromDisk(filePath);
     const result = await mutator(items);
     await writeJsonArrayToDisk(filePath, items);
+
+    if (afterSave) {
+      await afterSave(result);
+    }
+
     return result;
   });
 }

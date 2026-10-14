@@ -6,7 +6,7 @@ const TITLE_MAX_LENGTH = 200;
 
 function validatePayloadShape(payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    throw new HttpError(400, 'Body must be a JSON object.');
+    throw new HttpError(400, 'Body must be a JSON object.', { field: 'body' });
   }
 }
 
@@ -28,7 +28,7 @@ function normalizeTitleIfPresent(payload, normalized) {
   }
 
   if (typeof payload.title !== 'string') {
-    throw new HttpError(400, '"title" must be a string.');
+    throw new HttpError(400, '"title" must be a string.', { field: 'title' });
   }
 
   const trimmedTitle = payload.title.trim();
@@ -53,7 +53,7 @@ function normalizeCompletedIfPresent(payload, normalized) {
   }
 
   if (typeof payload.completed !== 'boolean') {
-    throw new HttpError(400, '"completed" must be a boolean.');
+    throw new HttpError(400, '"completed" must be a boolean.', { field: 'completed' });
   }
 
   normalized.completed = payload.completed;
@@ -68,7 +68,7 @@ function validateCreateTask(payload) {
   normalizeCompletedIfPresent(payload, normalized);
 
   if (!Object.hasOwn(normalized, 'title')) {
-    throw new HttpError(400, '"title" is required.');
+    throw new HttpError(400, '"title" is required.', { field: 'title' });
   }
 
   if (!Object.hasOwn(normalized, 'completed')) {
@@ -87,7 +87,9 @@ function validateUpdateTask(payload) {
   normalizeCompletedIfPresent(payload, normalized);
 
   if (Object.keys(normalized).length === 0) {
-    throw new HttpError(400, 'Provide at least one updatable field.');
+    throw new HttpError(400, 'Provide at least one updatable field.', {
+      fields: ALLOWED_FIELDS,
+    });
   }
 
   return normalized;

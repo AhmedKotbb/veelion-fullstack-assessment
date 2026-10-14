@@ -1,10 +1,12 @@
 const app = require('./app');
+const { ensureDataDir } = require('./config');
 const { ensureTasksFile } = require('./modules/tasks/services/tasks.service');
 
 const PORT = process.env.PORT || 3000;
 
 async function start() {
   try {
+    await ensureDataDir();
     await ensureTasksFile();
   } catch (error) {
     console.error(error.message);
