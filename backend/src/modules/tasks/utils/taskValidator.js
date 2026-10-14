@@ -1,6 +1,8 @@
 const HttpError = require('../../../utils/httpError');
 
 const ALLOWED_FIELDS = ['title', 'completed'];
+const TITLE_MIN_LENGTH = 4;
+const TITLE_MAX_LENGTH = 200;
 
 function validatePayloadShape(payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -31,7 +33,15 @@ function normalizeTitleIfPresent(payload, normalized) {
 
   const trimmedTitle = payload.title.trim();
   if (!trimmedTitle) {
-    throw new HttpError(400, '"title" cannot be empty.');
+    throw new HttpError(400, '"title" cannot be empty.', { field: 'title' });
+  }
+
+  if (trimmedTitle.length < TITLE_MIN_LENGTH || trimmedTitle.length > TITLE_MAX_LENGTH) {
+    throw new HttpError(
+      400,
+      `"title" must be between ${TITLE_MIN_LENGTH} and ${TITLE_MAX_LENGTH} characters.`,
+      { field: 'title' }
+    );
   }
 
   normalized.title = trimmedTitle;

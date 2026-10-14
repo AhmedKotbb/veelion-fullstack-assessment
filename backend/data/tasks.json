@@ -19,5 +19,12 @@
     "completed": false,
     "createdAt": "2026-04-08T10:11:56.354Z",
     "updatedAt": "2026-04-08T10:11:56.354Z"
+  },
+  {
+    "id": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb",
+    "title": "NEW TASK",
+    "completed": false,
+    "createdAt": "2026-10-14T10:29:12.879Z",
+    "updatedAt": "2026-10-14T10:30:05.129Z"
   }
 ]
