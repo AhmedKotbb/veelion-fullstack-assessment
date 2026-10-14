@@ -119,15 +119,21 @@ Create activity log entry.
 
 ```ts
 type CreateActivityRequest = {
-  action?: string;
-  info?: string;
+  action: string; // required, trimmed, 1–100 characters
+  info?: string; // optional, trimmed, at most 1000 characters
 };
 
 type CreateActivityResponse = ActivityLog;
 ```
 
+Possible errors:
+- `400` when body is not an object.
+- `400` when `action` is missing, not a string, empty, or longer than 100 characters.
+- `400` when `info` is present but not a string, or longer than 1000 characters.
+- `400` when the body contains unsupported fields.
+
 Notes:
-- `action` and `info` are currently not validated by backend.
+- New entries use a UUID `id`. Older rows may still have a numeric string id.
 - Response shape for activity endpoints is raw objects/arrays (not wrapped in `data`).
 
 ## Reports Endpoints

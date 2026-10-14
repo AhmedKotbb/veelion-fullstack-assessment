@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { DATA_DIR } = require('../../../config');
+const { createId } = require('../../../utils/id');
 
 const fp = path.join(DATA_DIR, 'activity.json');
 
@@ -36,18 +37,21 @@ function getAllActivity() {
   return arr;
 }
 
-function createNewActivity(b) {
+function createNewActivity(payload) {
   const list = loadDataB();
-  const one = {
-    id: String(Date.now()),
-    action: b.action,
-    info: b.info,
+  const entry = {
+    id: createId(),
+    action: payload.action,
     when: new Date().toISOString(),
   };
 
-  list.push(one);
+  if (Object.hasOwn(payload, 'info')) {
+    entry.info = payload.info;
+  }
+
+  list.push(entry);
   fs.writeFileSync(fp, JSON.stringify(list, null, 2));
-  return one;
+  return entry;
 }
 
 module.exports = {
