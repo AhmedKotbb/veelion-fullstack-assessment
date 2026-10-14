@@ -13,7 +13,7 @@ const activityService = require('../../activity/services/activity.service');
 const TASKS_FILE_PATH = path.join(DATA_DIR, 'tasks.json');
 
 function recordTaskActivity(action, task) {
-  activityService.createNewActivity({
+  return activityService.createNewActivity({
     action,
     info: `${task.id} ${task.title}`,
   });
