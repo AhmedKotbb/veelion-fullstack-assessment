@@ -2,6 +2,12 @@
 
 Base URL: `http://localhost:4000`
 
+## Access
+
+This API does not check who is calling. Put it behind the Next.js proxy (`frontend/app/api`) or behind an auth layer before it is reachable from a network.
+
+Browsers cannot call it unless `CORS_ORIGINS` lists their origin (comma-separated). The Next.js app calls the API from the server, so it does not need an entry. `POST`, `PUT`, `PATCH`, and `DELETE` allow 60 requests per minute per connecting address. A JSON body larger than 100kb is rejected.
+
 ## Shared Error Shape
 
 ```ts
@@ -11,6 +17,16 @@ type ErrorResponse = {
   };
 };
 ```
+
+These apply to every route:
+
+- `400` with message `Invalid JSON` when the body is not valid JSON. The parser's own text is not returned.
+- `400` with message `Invalid request body` for other body-parser failures, such as an unsupported charset.
+- `413` with message `Request body is too large` when the body is over 100kb.
+- `429` with message `Too many requests` when a write route is called more than 60 times in a minute.
+- `500` with message `Internal server error` for unexpected failures. The server log has the real error.
+
+Messages from our own validation are returned as written. Anything else is replaced with one of the messages above.
 
 ## Task Endpoints
 

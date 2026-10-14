@@ -192,13 +192,6 @@ Any error with a 4xx status sends its raw message. Broken JSON comes back as a V
 
 **Why.** The overwritten-field bug and the duplicate activity ids would have failed a small test suite before anyone shipped them.
 
-### The server stops in the middle of a write (low)
-
-`SIGTERM` and `SIGINT` kill the process immediately. There is no `/health` endpoint, no request log, and no handler for unhandled rejections.
-
-**What we should do.** Keep the server returned by `app.listen`. On `SIGTERM`, call `server.close()` so in-flight writes can finish. Add `GET /health` and a small request logger.
-
-**Why.** Closing cleanly is what makes the temp-file rename in the tasks section actually work during a deploy. A health check gives the frontend and a process manager something to call.
 
 ### `createId` still has a weak fallback (low)
 
@@ -207,22 +200,6 @@ Any error with a 4xx status sends its raw message. Broken JSON comes back as a V
 **What we should do.** Export `randomUUID` directly and delete the fallback.
 
 **Why.** A fallback that can collide is worse than a clear crash on a Node version we do not support.
-
-### The docs and the server disagree (low)
-
-`frontend/docs/backend-endpoints.md` says port `4000`. The README, `frontend/.env.example`, and `server.js` say `3000`. The docs also describe an `in-progress` status, while a task only has a boolean `completed`.
-
-**What we should do.** Change the docs to port `3000`. Write down that reports cannot count an `in-progress` bucket until the model has a real status field.
-
-**Why.** Anyone following the endpoint doc calls the wrong port. A status the model does not have will be hardcoded as `0` in reports.
-
-### Live data is committed, and `.env` is not ignored (low)
-
-`backend/data/*.json` is tracked. `.gitignore` only ignores `node_modules/` and `*.log`.
-
-**What we should do.** Keep seed files in git, ignore the live data files, and add `.env*` to `.gitignore`.
-
-**Why.** Every local run dirties the git status with data changes. A future `.env` with secrets would be committed by default.
 
 ### The API has no hardening (low)
 
