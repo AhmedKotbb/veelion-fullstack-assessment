@@ -1,7 +1,11 @@
 const path = require('node:path');
 
 const { createId } = require('../../../utils/id');
-const { readJsonArray, writeJsonArray } = require('../../../utils/jsonStore');
+const {
+  readJsonArray,
+  modifyJsonArray,
+  ensureJsonArrayFile,
+} = require('../../../utils/jsonStore');
 const HttpError = require('../../../utils/httpError');
 
 const TASKS_FILE_PATH = path.join(process.cwd(), 'data', 'tasks.json');
@@ -34,55 +38,55 @@ async function getTaskById(taskId) {
 }
 
 async function createTask(payload) {
-  const tasks = await readJsonArray(TASKS_FILE_PATH);
-  const newTask = buildTaskRecord(payload);
-
-  tasks.push(newTask);
-  await writeJsonArray(TASKS_FILE_PATH, tasks);
-
-  return newTask;
+  return modifyJsonArray(TASKS_FILE_PATH, (tasks) => {
+    const newTask = buildTaskRecord(payload);
+    tasks.push(newTask);
+    return newTask;
+  });
 }
 
 async function updateTask(taskId, updates) {
-  const tasks = await readJsonArray(TASKS_FILE_PATH);
-  const taskIndex = tasks.findIndex((item) => item.id === taskId);
+  return modifyJsonArray(TASKS_FILE_PATH, (tasks) => {
+    const taskIndex = tasks.findIndex((item) => item.id === taskId);
 
-  if (taskIndex === -1) {
-    throw new HttpError(404, 'Task not found.');
-  }
+    if (taskIndex === -1) {
+      throw new HttpError(404, 'Task not found.');
+    }
 
-  const existingTask = tasks[taskIndex];
-  const updatedTask = {
-    ...existingTask,
-    updatedAt: new Date().toISOString(),
-  };
+    const existingTask = tasks[taskIndex];
+    const updatedTask = {
+      ...existingTask,
+      updatedAt: new Date().toISOString(),
+    };
 
-  if (Object.hasOwn(updates, 'title')) {
-    updatedTask.title = updates.title;
-  }
+    if (Object.hasOwn(updates, 'title')) {
+      updatedTask.title = updates.title;
+    }
 
-  if (Object.hasOwn(updates, 'completed')) {
-    updatedTask.completed = updates.completed;
-  }
+    if (Object.hasOwn(updates, 'completed')) {
+      updatedTask.completed = updates.completed;
+    }
 
-  tasks[taskIndex] = updatedTask;
-  await writeJsonArray(TASKS_FILE_PATH, tasks);
-
-  return updatedTask;
+    tasks[taskIndex] = updatedTask;
+    return updatedTask;
+  });
 }
 
 async function deleteTask(taskId) {
-  const tasks = await readJsonArray(TASKS_FILE_PATH);
-  const taskIndex = tasks.findIndex((item) => item.id === taskId);
+  return modifyJsonArray(TASKS_FILE_PATH, (tasks) => {
+    const taskIndex = tasks.findIndex((item) => item.id === taskId);
 
-  if (taskIndex === -1) {
-    throw new HttpError(404, 'Task not found.');
-  }
+    if (taskIndex === -1) {
+      throw new HttpError(404, 'Task not found.');
+    }
 
-  const [removedTask] = tasks.splice(taskIndex, 1);
-  await writeJsonArray(TASKS_FILE_PATH, tasks);
+    const [removedTask] = tasks.splice(taskIndex, 1);
+    return removedTask;
+  });
+}
 
-  return removedTask;
+function ensureTasksFile() {
+  return ensureJsonArrayFile(TASKS_FILE_PATH);
 }
 
 module.exports = {
@@ -91,4 +95,5 @@ module.exports = {
   createTask,
   updateTask,
   deleteTask,
+  ensureTasksFile,
 };
