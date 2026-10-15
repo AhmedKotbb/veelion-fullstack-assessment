@@ -35,10 +35,12 @@ Messages from our own validation are returned as written. Anything else is repla
 Fetch all tasks.
 
 ```ts
+type TaskStatus = "todo" | "in-progress" | "done";
+
 type Task = {
   id: string;
   title: string;
-  completed: boolean;
+  status: TaskStatus;
   createdAt: string; // ISO datetime
   updatedAt: string; // ISO datetime
 };
@@ -68,7 +70,7 @@ Create a task.
 ```ts
 type CreateTaskRequest = {
   title: string; // required, trimmed, 4–200 characters
-  completed?: boolean; // default false
+  status?: TaskStatus; // default "todo"
 };
 
 type CreateTaskResponse = {
@@ -79,7 +81,7 @@ type CreateTaskResponse = {
 Possible errors:
 - `400` when body is not an object.
 - `400` when title is missing, not a string, empty, or outside 4–200 characters.
-- `400` when completed is not a boolean.
+- `400` when status is present but is not `todo`, `in-progress`, or `done`.
 
 ### PATCH /tasks/:id
 
@@ -88,7 +90,7 @@ Update task title or status.
 ```ts
 type PatchTaskRequest = {
   title?: string; // if provided, trimmed, 4–200 characters
-  completed?: boolean;
+  status?: TaskStatus; // only an adjacent move: todo <-> in-progress <-> done
 };
 
 type PatchTaskResponse = {
@@ -99,6 +101,8 @@ type PatchTaskResponse = {
 Possible errors:
 - `400` when body is invalid.
 - `400` when no supported fields are provided.
+- `400` when status is present but is not `todo`, `in-progress`, or `done`.
+- `400` when status skips a step, stays the same, or otherwise is not an adjacent move (`todo` ↔ `in-progress` ↔ `done`).
 - `404` when task does not exist.
 
 ### DELETE /tasks/:id
@@ -185,5 +189,5 @@ type GetTasksSummaryResponse = TasksSummary;
 ```
 
 Notes:
-- `in-progress` is currently returned as `0` because task data only includes boolean `completed`.
+- `byStatus` counts tasks by their `status` field (`todo`, `in-progress`, `done`).
 - Response shape is raw object.

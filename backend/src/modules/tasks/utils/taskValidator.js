@@ -1,6 +1,13 @@
 const HttpError = require('../../../utils/httpError');
 
-const ALLOWED_FIELDS = ['title', 'completed'];
+const ALLOWED_FIELDS = ['title', 'status'];
+const TASK_STATUSES = ['todo', 'in-progress', 'done'];
+const DEFAULT_STATUS = 'todo';
+const STATUS_TRANSITIONS = {
+  todo: ['in-progress'],
+  'in-progress': ['todo', 'done'],
+  done: ['in-progress'],
+};
 const TITLE_MIN_LENGTH = 4;
 const TITLE_MAX_LENGTH = 200;
 
@@ -47,16 +54,34 @@ function normalizeTitleIfPresent(payload, normalized) {
   normalized.title = trimmedTitle;
 }
 
-function normalizeCompletedIfPresent(payload, normalized) {
-  if (!Object.hasOwn(payload, 'completed')) {
+function normalizeStatusIfPresent(payload, normalized) {
+  if (!Object.hasOwn(payload, 'status')) {
     return;
   }
 
-  if (typeof payload.completed !== 'boolean') {
-    throw new HttpError(400, '"completed" must be a boolean.', { field: 'completed' });
+  if (!TASK_STATUSES.includes(payload.status)) {
+    throw new HttpError(
+      400,
+      '"status" must be one of "todo", "in-progress", or "done".',
+      { field: 'status' }
+    );
   }
 
-  normalized.completed = payload.completed;
+  normalized.status = payload.status;
+}
+
+function assertStatusTransition(currentStatus, nextStatus) {
+  const allowedNext = STATUS_TRANSITIONS[currentStatus] || [];
+
+  if (allowedNext.includes(nextStatus)) {
+    return;
+  }
+
+  throw new HttpError(
+    400,
+    '"status" can only move between "todo" and "in-progress", or between "in-progress" and "done".',
+    { field: 'status', from: currentStatus, to: nextStatus }
+  );
 }
 
 function validateCreateTask(payload) {
@@ -65,14 +90,14 @@ function validateCreateTask(payload) {
 
   const normalized = {};
   normalizeTitleIfPresent(payload, normalized);
-  normalizeCompletedIfPresent(payload, normalized);
+  normalizeStatusIfPresent(payload, normalized);
 
   if (!Object.hasOwn(normalized, 'title')) {
     throw new HttpError(400, '"title" is required.', { field: 'title' });
   }
 
-  if (!Object.hasOwn(normalized, 'completed')) {
-    normalized.completed = false;
+  if (!Object.hasOwn(normalized, 'status')) {
+    normalized.status = DEFAULT_STATUS;
   }
 
   return normalized;
@@ -84,7 +109,7 @@ function validateUpdateTask(payload) {
 
   const normalized = {};
   normalizeTitleIfPresent(payload, normalized);
-  normalizeCompletedIfPresent(payload, normalized);
+  normalizeStatusIfPresent(payload, normalized);
 
   if (Object.keys(normalized).length === 0) {
     throw new HttpError(400, 'Provide at least one updatable field.', {
@@ -98,4 +123,5 @@ function validateUpdateTask(payload) {
 module.exports = {
   validateCreateTask,
   validateUpdateTask,
+  assertStatusTransition,
 };

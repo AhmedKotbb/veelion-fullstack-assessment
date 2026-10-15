@@ -8,6 +8,7 @@ const {
   ensureJsonArrayFile,
 } = require('../../../utils/jsonStore');
 const HttpError = require('../../../utils/httpError');
+const { assertStatusTransition } = require('../utils/taskValidator');
 const activityService = require('../../activity/services/activity.service');
 
 const TASKS_FILE_PATH = path.join(DATA_DIR, 'tasks.json');
@@ -31,7 +32,7 @@ function buildTaskRecord(payload) {
   return {
     id: createId(),
     title: payload.title,
-    completed: payload.completed,
+    status: payload.status,
     createdAt: now,
     updatedAt: now,
   };
@@ -78,8 +79,9 @@ async function updateTask(taskId, updates) {
       updatedTask.title = updates.title;
     }
 
-    if (Object.hasOwn(updates, 'completed')) {
-      updatedTask.completed = updates.completed;
+    if (Object.hasOwn(updates, 'status')) {
+      assertStatusTransition(existingTask.status, updates.status);
+      updatedTask.status = updates.status;
     }
 
     tasks[taskIndex] = updatedTask;
