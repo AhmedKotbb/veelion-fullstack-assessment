@@ -172,7 +172,9 @@ Possible errors:
 
 ### GET /reports/tasks-summary
 
-Fetch summary statistics for tasks and activity.
+Fetch summary statistics for tasks and activity. No query string and no body.
+
+This response is the raw summary object. It does not use the `{ data }` wrapper. That wrapper is for other new endpoints that return a task or an activity row.
 
 ```ts
 type TasksSummary = {
@@ -188,6 +190,18 @@ type TasksSummary = {
 type GetTasksSummaryResponse = TasksSummary;
 ```
 
+Example:
+
+```json
+{
+  "total": 20,
+  "byStatus": { "todo": 5, "in-progress": 10, "done": 5 },
+  "recentActivityCount": 12
+}
+```
+
 Notes:
-- `byStatus` counts tasks by their `status` field (`todo`, `in-progress`, `done`).
-- Response shape is raw object.
+- `total` is the number of tasks in the tasks file, including any task whose `status` is not one of the three keys below.
+- `byStatus` always has `todo`, `in-progress`, and `done`. Each value is how many tasks have that `status`. A task with any other status is left out of these three counts.
+- `recentActivityCount` is how many activity rows have a `when` timestamp inside the last 7 days (168 hours), measured from the time of the request. A row with a missing or unparseable `when` is not counted.
+- Both files are read together. The response is built from those reads and is not stored.
