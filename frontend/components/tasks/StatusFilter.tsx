@@ -2,8 +2,9 @@ import type { TaskFilter } from "@/types/api";
 
 const FILTERS: Array<{ label: string; value: TaskFilter }> = [
   { label: "All", value: "all" },
-  { label: "Completed", value: "completed" },
-  { label: "Pending", value: "pending" },
+  { label: "To do", value: "todo" },
+  { label: "In progress", value: "in-progress" },
+  { label: "Done", value: "done" },
 ];
 
 type StatusFilterProps = {

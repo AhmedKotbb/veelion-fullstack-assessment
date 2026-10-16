@@ -1,7 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ErrorResponse, Task, TaskFilter, TaskResponse, TasksResponse } from "@/types/api";
+import type {
+  ErrorResponse,
+  Task,
+  TaskFilter,
+  TaskResponse,
+  TaskStatus,
+  TasksResponse,
+} from "@/types/api";
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
@@ -56,14 +63,14 @@ export function useTasks() {
     }
   }, []);
 
-  const updateTaskStatus = useCallback(async (taskId: string, completed: boolean) => {
+  const updateTaskStatus = useCallback(async (taskId: string, status: TaskStatus) => {
     try {
       setUpdatingTaskId(taskId);
       setError("");
 
       const body = await requestJson<TaskResponse>(`/api/tasks/${taskId}`, {
         method: "PATCH",
-        body: JSON.stringify({ completed }),
+        body: JSON.stringify({ status }),
       });
 
       setTasks((previous) =>
@@ -81,15 +88,11 @@ export function useTasks() {
   }, [fetchTasks]);
 
   const filteredTasks = useMemo(() => {
-    if (filter === "completed") {
-      return tasks.filter((task) => task.completed);
+    if (filter === "all") {
+      return tasks;
     }
 
-    if (filter === "pending") {
-      return tasks.filter((task) => !task.completed);
-    }
-
-    return tasks;
+    return tasks.filter((task) => task.status === filter);
   }, [tasks, filter]);
 
   return {

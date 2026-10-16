@@ -1,12 +1,32 @@
-import type { Task } from "@/types/api";
+import { TASK_STATUS_LABELS, type Task, type TaskStatus } from "@/types/api";
+
+const NEXT_STATUSES: Record<TaskStatus, TaskStatus[]> = {
+  todo: ["in-progress"],
+  "in-progress": ["todo", "done"],
+  done: ["in-progress"],
+};
 
 type TaskItemProps = {
   task: Task;
   busy: boolean;
-  onToggle: (task: Task) => void;
+  onStatusChange: (task: Task, status: TaskStatus) => void;
 };
 
-export function TaskItem({ task, busy, onToggle }: TaskItemProps) {
+function moveLabel(from: TaskStatus, to: TaskStatus): string {
+  if (to === "todo") {
+    return "Back to to do";
+  }
+
+  if (to === "done") {
+    return "Mark done";
+  }
+
+  return from === "done" ? "Reopen" : "Start";
+}
+
+export function TaskItem({ task, busy, onStatusChange }: TaskItemProps) {
+  const moves = NEXT_STATUSES[task.status] ?? [];
+
   return (
     <li
       className="card"
@@ -18,23 +38,31 @@ export function TaskItem({ task, busy, onToggle }: TaskItemProps) {
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: "0.8rem", alignItems: "start" }}>
         <p style={{ margin: 0, fontWeight: 600 }}>{task.title}</p>
-        <span className="badge">{task.completed ? "Completed" : "Pending"}</span>
+        <span className="badge">{TASK_STATUS_LABELS[task.status] ?? task.status}</span>
       </div>
 
       <small style={{ color: "var(--muted)" }}>
         Updated: {new Date(task.updatedAt).toLocaleString()}
       </small>
 
-      <div>
-        <button
-          type="button"
-          className="button"
-          onClick={() => onToggle(task)}
-          disabled={busy}
-          aria-label={`Mark ${task.title} as ${task.completed ? "pending" : "completed"}`}
-        >
-          {busy ? "Saving..." : task.completed ? "Mark as Pending" : "Mark as Completed"}
-        </button>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        {busy ? (
+          <button type="button" className="button" disabled>
+            Saving...
+          </button>
+        ) : (
+          moves.map((status) => (
+            <button
+              key={status}
+              type="button"
+              className="button"
+              onClick={() => onStatusChange(task, status)}
+              aria-label={`${moveLabel(task.status, status)}: ${task.title}`}
+            >
+              {moveLabel(task.status, status)}
+            </button>
+          ))
+        )}
       </div>
     </li>
   );

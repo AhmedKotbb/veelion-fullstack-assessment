@@ -1,7 +1,7 @@
 "use client";
 
 import { useTasks } from "@/hooks/useTasks";
-import type { Task } from "@/types/api";
+import type { Task, TaskStatus } from "@/types/api";
 import { StatusFilter } from "@/components/tasks/StatusFilter";
 import { TaskList } from "@/components/tasks/TaskList";
 
@@ -17,8 +17,8 @@ export function TaskDashboard() {
     updateTaskStatus,
   } = useTasks();
 
-  const handleToggle = (task: Task) => {
-    updateTaskStatus(task.id, !task.completed);
+  const handleStatusChange = (task: Task, status: TaskStatus) => {
+    updateTaskStatus(task.id, status);
   };
 
   return (
@@ -45,7 +45,7 @@ export function TaskDashboard() {
       ) : null}
 
       {!loading && !error ? (
-        <TaskList tasks={filteredTasks} updatingTaskId={updatingTaskId} onToggle={handleToggle} />
+        <TaskList tasks={filteredTasks} updatingTaskId={updatingTaskId} onStatusChange={handleStatusChange} />
       ) : null}
     </section>
   );
