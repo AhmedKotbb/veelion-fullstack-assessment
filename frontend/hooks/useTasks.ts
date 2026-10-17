@@ -1,14 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type {
-  ErrorResponse,
-  Task,
-  TaskFilter,
-  TaskResponse,
-  TaskStatus,
-  TasksResponse,
-} from "@/types/api";
+import { requestJson } from "@/lib/apiClient";
+import type { Task, TaskFilter, TaskResponse, TaskStatus, TasksResponse } from "@/types/api";
 
 export type TaskUpdateError = {
   taskId: string;
@@ -21,27 +15,6 @@ function getErrorMessage(error: unknown, fallback: string): string {
   }
 
   return fallback;
-}
-
-async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers || {}),
-    },
-  });
-
-  if (!response.ok) {
-    try {
-      const body = (await response.json()) as ErrorResponse;
-      throw new Error(body.error?.message || `Request failed with ${response.status}`);
-    } catch (error) {
-      throw new Error(getErrorMessage(error, `Request failed with ${response.status}`));
-    }
-  }
-
-  return (await response.json()) as T;
 }
 
 export function useTasks() {
@@ -58,9 +31,7 @@ export function useTasks() {
       setLoadError("");
       setUpdateError(null);
 
-      const body = await requestJson<TasksResponse>("/api/tasks", {
-        method: "GET",
-      });
+      const body = await requestJson<TasksResponse>("/api/tasks");
 
       setTasks(body.data);
     } catch (error) {
@@ -121,7 +92,6 @@ export function useTasks() {
   }, [tasks, filter]);
 
   return {
-    tasks,
     filteredTasks,
     filter,
     loading,

@@ -1,3 +1,5 @@
+import "server-only";
+
 import { BACKEND_BASE_URL } from "@/lib/constants";
 import type {
   ActivityLog,
@@ -8,13 +10,15 @@ import type {
   TasksResponse,
 } from "@/types/api";
 
+const BACKEND_TIMEOUT_MS = 5000;
 const UNREACHABLE_MESSAGE = "Could not reach the server. Please try again.";
+const TIMEOUT_MESSAGE = "The server took too long to respond. Please try again.";
 
 export class ApiError extends Error {
   status: number;
 
-  constructor(status: number, message: string) {
-    super(message);
+  constructor(status: number, message: string, options?: { cause?: unknown }) {
+    super(message, options);
     this.name = "ApiError";
     this.status = status;
   }
@@ -25,6 +29,7 @@ export function errorForRoute(error: unknown, fallback: string): { status: numbe
     return { status: error.status, message: error.message };
   }
 
+  console.error(error);
   return { status: 500, message: fallback };
 }
 
@@ -32,7 +37,23 @@ function buildBackendUrl(path: string): string {
   return `${BACKEND_BASE_URL}${path}`;
 }
 
-async function parseError(response: Response): Promise<string> {
+function errorName(error: unknown): string {
+  return error instanceof Error ? error.name : "";
+}
+
+function isTimeoutError(error: unknown): boolean {
+  if (errorName(error) === "TimeoutError") {
+    return true;
+  }
+
+  if (error instanceof Error && error.cause !== undefined) {
+    return isTimeoutError(error.cause);
+  }
+
+  return false;
+}
+
+async function readBackendError(response: Response): Promise<string> {
   const fallback = `Request failed with status ${response.status}`;
 
   try {
@@ -43,33 +64,30 @@ async function parseError(response: Response): Promise<string> {
   }
 }
 
-function asApiError(error: unknown, fallback: string): ApiError {
-  if (error instanceof ApiError) {
-    return error;
-  }
+async function requestBackend(path: string, init: RequestInit | undefined): Promise<Response> {
+  let response: Response;
 
-  if (error instanceof TypeError) {
-    return new ApiError(502, UNREACHABLE_MESSAGE);
-  }
-
-  return new ApiError(500, fallback);
-}
-
-async function requestBackend(path: string, init: RequestInit | undefined, fallback: string): Promise<Response> {
   try {
-    const response = await fetch(buildBackendUrl(path), {
+    response = await fetch(buildBackendUrl(path), {
       ...init,
       cache: "no-store",
+      signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS),
     });
+  } catch (error) {
+    console.error(error);
 
-    if (!response.ok) {
-      throw new ApiError(response.status, await parseError(response));
+    if (isTimeoutError(error)) {
+      throw new ApiError(504, TIMEOUT_MESSAGE, { cause: error });
     }
 
-    return response;
-  } catch (error) {
-    throw asApiError(error, fallback);
+    throw new ApiError(502, UNREACHABLE_MESSAGE, { cause: error });
   }
+
+  if (!response.ok) {
+    throw new ApiError(response.status, await readBackendError(response));
+  }
+
+  return response;
 }
 
 export async function createTaskInBackend(title: string, status?: TaskStatus): Promise<Task> {
@@ -78,55 +96,36 @@ export async function createTaskInBackend(title: string, status?: TaskStatus): P
     payload.status = status;
   }
 
-  const response = await requestBackend(
-    "/tasks",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+  const response = await requestBackend("/tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-    "Failed to create task."
-  );
+    body: JSON.stringify(payload),
+  });
   const body = (await response.json()) as TaskResponse;
   return body.data;
 }
 
 export async function getTasksFromBackend(): Promise<Task[]> {
-  const response = await requestBackend("/tasks", undefined, "Failed to load tasks.");
+  const response = await requestBackend("/tasks", undefined);
   const body = (await response.json()) as TasksResponse;
   return body.data;
 }
 
 export async function updateTaskInBackend(taskId: string, status: TaskStatus): Promise<Task> {
-  const response = await requestBackend(
-    `/tasks/${taskId}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
+  const response = await requestBackend(`/tasks/${taskId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
     },
-    "Failed to update task."
-  );
+    body: JSON.stringify({ status }),
+  });
   const body = (await response.json()) as TaskResponse;
   return body.data;
 }
 
 export async function getActivityFromBackend(): Promise<ActivityLog[]> {
-  try {
-    const response = await fetch(buildBackendUrl("/activity"), {
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      throw new Error(await parseError(response));
-    }
-
-    return (await response.json()) as ActivityLog[];
-  } catch (error) {
-    throw new Error(error instanceof Error ? error.message : "Failed to load activity logs.");
-  }
+  const response = await requestBackend("/activity", undefined);
+  return (await response.json()) as ActivityLog[];
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { requestJson } from "@/lib/apiClient";
 import type { ActivityLog } from "@/types/api";
 
 export default function ActivityPage() {
@@ -46,12 +47,12 @@ export default function ActivityPage() {
   }
 
   useEffect(() => {
-    fetch("/api/activity")
-      .then((response) => response.json())
-      .then((data: ActivityLog[]) => {
-        setAllActivity(data || []);
-        setShownActivity(data || []);
-        setForcedList(data || []);
+    requestJson<ActivityLog[]>("/api/activity")
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        setAllActivity(list);
+        setShownActivity(list);
+        setForcedList(list);
       })
       .catch(() => {
         setAllActivity([]);

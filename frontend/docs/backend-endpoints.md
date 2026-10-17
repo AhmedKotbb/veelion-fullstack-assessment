@@ -1,6 +1,6 @@
 # Backend API Endpoints
 
-Base URL: `http://localhost:4000`
+Base URL: `http://localhost:3000`
 
 ## Access
 
