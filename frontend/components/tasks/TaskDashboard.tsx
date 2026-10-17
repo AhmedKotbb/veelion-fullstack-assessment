@@ -7,7 +7,12 @@ import { CreateTaskDialog } from "@/components/tasks/CreateTaskDialog";
 import { StatusFilter } from "@/components/tasks/StatusFilter";
 import { TaskList } from "@/components/tasks/TaskList";
 
-export function TaskDashboard() {
+type TaskDashboardProps = {
+  initialTasks: Task[];
+  initialLoadError: string;
+};
+
+export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [createKey, setCreateKey] = useState(0);
   const {
@@ -15,13 +20,13 @@ export function TaskDashboard() {
     filter,
     loading,
     loadError,
-    updateError,
-    updatingTaskId,
+    updateErrors,
+    savingTaskIds,
     setFilter,
     fetchTasks,
     createTask,
     updateTaskStatus,
-  } = useTasks();
+  } = useTasks(initialTasks, initialLoadError);
 
   const handleStatusChange = (task: Task, status: TaskStatus) => {
     updateTaskStatus(task.id, status);
@@ -64,13 +69,17 @@ export function TaskDashboard() {
 
       {loading ? (
         <section className="card" style={{ padding: "1rem" }}>
-          <p style={{ margin: 0 }}>Loading tasks...</p>
+          <p role="status" style={{ margin: 0 }}>
+            Loading tasks...
+          </p>
         </section>
       ) : null}
 
       {loadError ? (
         <section className="card" style={{ padding: "1rem", borderColor: "#e3b4c0", background: "#fff8fa" }}>
-          <p style={{ marginTop: 0, marginBottom: "0.75rem", color: "var(--danger)" }}>{loadError}</p>
+          <p role="alert" style={{ marginTop: 0, marginBottom: "0.75rem", color: "var(--danger)" }}>
+            {loadError}
+          </p>
           <button type="button" className="button" onClick={fetchTasks}>
             Retry
           </button>
@@ -80,8 +89,8 @@ export function TaskDashboard() {
       {!loading && !loadError ? (
         <TaskList
           tasks={filteredTasks}
-          updatingTaskId={updatingTaskId}
-          updateError={updateError}
+          savingTaskIds={savingTaskIds}
+          updateErrors={updateErrors}
           onStatusChange={handleStatusChange}
         />
       ) : null}

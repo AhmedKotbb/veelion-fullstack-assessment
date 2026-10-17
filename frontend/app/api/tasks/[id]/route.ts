@@ -3,6 +3,8 @@ import { errorForRoute, updateTaskInBackend } from "@/lib/backendApi";
 import { TASK_STATUSES, type TaskStatus } from "@/types/api";
 
 const ALLOWED_STATUSES = new Set<string>(TASK_STATUSES);
+const TASK_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function isTaskStatus(value: unknown): value is TaskStatus {
   return typeof value === "string" && ALLOWED_STATUSES.has(value);
@@ -21,6 +23,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     payload = (await request.json()) as { status?: unknown };
   } catch {
     return NextResponse.json({ error: { message: "Invalid JSON" } }, { status: 400 });
+  }
+
+  if (!TASK_ID_PATTERN.test(params.id)) {
+    return NextResponse.json({ error: { message: "Task id is not valid." } }, { status: 400 });
   }
 
   if (!isTaskStatus(payload?.status)) {

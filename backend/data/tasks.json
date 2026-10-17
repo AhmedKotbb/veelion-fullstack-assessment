@@ -25,14 +25,14 @@
     "title": "NEW TASK",
     "status": "in-progress",
     "createdAt": "2026-10-14T10:29:12.879Z",
-    "updatedAt": "2026-10-15T12:26:04.300Z"
+    "updatedAt": "2026-10-17T12:45:00.576Z"
   },
   {
     "id": "35d131fc-30e2-47c6-a0dc-9800e91dd635",
     "title": "create report module",
-    "status": "todo",
+    "status": "in-progress",
     "createdAt": "2026-10-15T12:26:40.695Z",
-    "updatedAt": "2026-10-15T12:26:40.695Z"
+    "updatedAt": "2026-10-17T12:44:45.194Z"
   },
   {
     "id": "d7e4a1c5-448b-48f4-854b-c6e7853e7f2f",

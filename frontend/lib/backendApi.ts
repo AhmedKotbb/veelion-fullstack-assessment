@@ -114,7 +114,7 @@ export async function getTasksFromBackend(): Promise<Task[]> {
 }
 
 export async function updateTaskInBackend(taskId: string, status: TaskStatus): Promise<Task> {
-  const response = await requestBackend(`/tasks/${taskId}`, {
+  const response = await requestBackend(`/tasks/${encodeURIComponent(taskId)}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

@@ -67,7 +67,9 @@ export function TaskItem({ task, busy, error, onStatusChange }: TaskItemProps) {
       </div>
 
       {error ? (
-        <p style={{ margin: 0, color: "var(--danger)" }}>{error}</p>
+        <p role="alert" style={{ margin: 0, color: "var(--danger)" }}>
+          {error}
+        </p>
       ) : null}
     </li>
   );

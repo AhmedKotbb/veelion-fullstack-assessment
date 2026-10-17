@@ -1,13 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { requestJson } from "@/lib/apiClient";
 import type { Task, TaskFilter, TaskResponse, TaskStatus, TasksResponse } from "@/types/api";
-
-export type TaskUpdateError = {
-  taskId: string;
-  message: string;
-};
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
@@ -17,19 +13,47 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [filter, setFilter] = useState<TaskFilter>("all");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [loadError, setLoadError] = useState<string>("");
-  const [updateError, setUpdateError] = useState<TaskUpdateError | null>(null);
-  const [updatingTaskId, setUpdatingTaskId] = useState<string>("");
+function readTaskFilter(value: string | null): TaskFilter {
+  if (value === "todo" || value === "in-progress" || value === "done") {
+    return value;
+  }
+
+  return "all";
+}
+
+export function useTasks(initialTasks: Task[], initialLoadError: string) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(initialLoadError);
+  const [updateErrors, setUpdateErrors] = useState<Record<string, string>>({});
+  const savingTaskIdsRef = useRef<Set<string>>(new Set());
+  const [savingTaskIds, setSavingTaskIds] = useState<Set<string>>(() => new Set());
+  const filter = readTaskFilter(searchParams.get("status"));
+
+  const setFilter = useCallback(
+    (value: TaskFilter) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (value === "all") {
+        params.delete("status");
+      } else {
+        params.set("status", value);
+      }
+
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
 
   const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
       setLoadError("");
-      setUpdateError(null);
+      setUpdateErrors({});
 
       const body = await requestJson<TasksResponse>("/api/tasks");
 
@@ -41,47 +65,62 @@ export function useTasks() {
     }
   }, []);
 
-  const createTask = useCallback(async (title: string, status?: TaskStatus) => {
-    const payload: { title: string; status?: TaskStatus } = { title };
-    if (status) {
-      payload.status = status;
-    }
+  const createTask = useCallback(
+    async (title: string, status?: TaskStatus) => {
+      const payload: { title: string; status?: TaskStatus } = { title };
+      if (status) {
+        payload.status = status;
+      }
 
-    await requestJson<TaskResponse>("/api/tasks", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+      await requestJson<TaskResponse>("/api/tasks", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
-    setFilter("all");
-    await fetchTasks();
-  }, [fetchTasks]);
+      setFilter("all");
+      await fetchTasks();
+    },
+    [fetchTasks, setFilter]
+  );
 
   const updateTaskStatus = useCallback(async (taskId: string, status: TaskStatus) => {
-    try {
-      setUpdatingTaskId(taskId);
-      setUpdateError(null);
+    if (savingTaskIdsRef.current.has(taskId)) {
+      return;
+    }
 
-      const body = await requestJson<TaskResponse>(`/api/tasks/${taskId}`, {
+    const started = new Set(savingTaskIdsRef.current);
+    started.add(taskId);
+    savingTaskIdsRef.current = started;
+    setSavingTaskIds(started);
+    setUpdateErrors((current) => {
+      if (!(taskId in current)) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[taskId];
+      return next;
+    });
+
+    try {
+      const body = await requestJson<TaskResponse>(`/api/tasks/${encodeURIComponent(taskId)}`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
       });
 
-      setTasks((previous) =>
-        previous.map((task) => (task.id === taskId ? body.data : task))
-      );
+      setTasks((previous) => previous.map((task) => (task.id === taskId ? body.data : task)));
     } catch (error) {
-      setUpdateError({
-        taskId,
-        message: getErrorMessage(error, "Could not update task status."),
-      });
+      setUpdateErrors((current) => ({
+        ...current,
+        [taskId]: getErrorMessage(error, "Could not update task status."),
+      }));
     } finally {
-      setUpdatingTaskId("");
+      const finished = new Set(savingTaskIdsRef.current);
+      finished.delete(taskId);
+      savingTaskIdsRef.current = finished;
+      setSavingTaskIds(finished);
     }
   }, []);
-
-  useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
 
   const filteredTasks = useMemo(() => {
     if (filter === "all") {
@@ -96,8 +135,8 @@ export function useTasks() {
     filter,
     loading,
     loadError,
-    updateError,
-    updatingTaskId,
+    updateErrors,
+    savingTaskIds,
     setFilter,
     fetchTasks,
     createTask,
