@@ -9,6 +9,7 @@ const NEXT_STATUSES: Record<TaskStatus, TaskStatus[]> = {
 type TaskItemProps = {
   task: Task;
   busy: boolean;
+  error: string;
   onStatusChange: (task: Task, status: TaskStatus) => void;
 };
 
@@ -24,7 +25,7 @@ function moveLabel(from: TaskStatus, to: TaskStatus): string {
   return from === "done" ? "Reopen" : "Start";
 }
 
-export function TaskItem({ task, busy, onStatusChange }: TaskItemProps) {
+export function TaskItem({ task, busy, error, onStatusChange }: TaskItemProps) {
   const moves = NEXT_STATUSES[task.status] ?? [];
 
   return (
@@ -64,6 +65,10 @@ export function TaskItem({ task, busy, onStatusChange }: TaskItemProps) {
           ))
         )}
       </div>
+
+      {error ? (
+        <p style={{ margin: 0, color: "var(--danger)" }}>{error}</p>
+      ) : null}
     </li>
   );
 }

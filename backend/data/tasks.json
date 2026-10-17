@@ -33,5 +33,12 @@
     "status": "todo",
     "createdAt": "2026-10-15T12:26:40.695Z",
     "updatedAt": "2026-10-15T12:26:40.695Z"
+  },
+  {
+    "id": "d7e4a1c5-448b-48f4-854b-c6e7853e7f2f",
+    "title": "fix the frontend issues",
+    "status": "todo",
+    "createdAt": "2026-10-17T11:56:41.012Z",
+    "updatedAt": "2026-10-17T11:56:41.012Z"
   }
 ]

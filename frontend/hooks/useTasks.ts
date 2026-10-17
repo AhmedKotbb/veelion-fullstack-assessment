@@ -10,6 +10,11 @@ import type {
   TasksResponse,
 } from "@/types/api";
 
+export type TaskUpdateError = {
+  taskId: string;
+  message: string;
+};
+
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
     return error.message;
@@ -43,13 +48,15 @@ export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<TaskFilter>("all");
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
+  const [loadError, setLoadError] = useState<string>("");
+  const [updateError, setUpdateError] = useState<TaskUpdateError | null>(null);
   const [updatingTaskId, setUpdatingTaskId] = useState<string>("");
 
   const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
-      setError("");
+      setLoadError("");
+      setUpdateError(null);
 
       const body = await requestJson<TasksResponse>("/api/tasks", {
         method: "GET",
@@ -57,16 +64,31 @@ export function useTasks() {
 
       setTasks(body.data);
     } catch (error) {
-      setError(getErrorMessage(error, "Could not load tasks right now."));
+      setLoadError(getErrorMessage(error, "Could not load tasks right now."));
     } finally {
       setLoading(false);
     }
   }, []);
 
+  const createTask = useCallback(async (title: string, status?: TaskStatus) => {
+    const payload: { title: string; status?: TaskStatus } = { title };
+    if (status) {
+      payload.status = status;
+    }
+
+    await requestJson<TaskResponse>("/api/tasks", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    setFilter("all");
+    await fetchTasks();
+  }, [fetchTasks]);
+
   const updateTaskStatus = useCallback(async (taskId: string, status: TaskStatus) => {
     try {
       setUpdatingTaskId(taskId);
-      setError("");
+      setUpdateError(null);
 
       const body = await requestJson<TaskResponse>(`/api/tasks/${taskId}`, {
         method: "PATCH",
@@ -77,7 +99,10 @@ export function useTasks() {
         previous.map((task) => (task.id === taskId ? body.data : task))
       );
     } catch (error) {
-      setError(getErrorMessage(error, "Could not update task status."));
+      setUpdateError({
+        taskId,
+        message: getErrorMessage(error, "Could not update task status."),
+      });
     } finally {
       setUpdatingTaskId("");
     }
@@ -100,10 +125,12 @@ export function useTasks() {
     filteredTasks,
     filter,
     loading,
-    error,
+    loadError,
+    updateError,
     updatingTaskId,
     setFilter,
     fetchTasks,
+    createTask,
     updateTaskStatus,
   };
 }

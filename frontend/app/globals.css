@@ -85,3 +85,21 @@ main {
   display: grid;
   gap: 1rem;
 }
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.modal {
+  width: min(420px, calc(100% - 2rem));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.modal::backdrop {
+  background: rgba(30, 35, 40, 0.45);
+}
