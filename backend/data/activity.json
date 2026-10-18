@@ -88,5 +88,41 @@
     "action": "task.updated",
     "when": "2026-10-18T15:46:02.143Z",
     "info": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb NEW TASK"
+  },
+  {
+    "id": "837fd125-30bb-4aba-a5a1-92d8fc9efd90",
+    "action": "task.created",
+    "when": "2026-10-18T15:53:25.873Z",
+    "info": "b8e80d0b-49ad-42b4-9191-52199d1fa6e9 List refresh check"
+  },
+  {
+    "id": "6d4ff56e-3686-434f-9f2e-22863bcc7a60",
+    "action": "task.updated",
+    "when": "2026-10-18T15:53:59.415Z",
+    "info": "b8e80d0b-49ad-42b4-9191-52199d1fa6e9 List refresh updated"
+  },
+  {
+    "id": "223762cd-e8bb-43a8-af23-c7e69593ff22",
+    "action": "task.deleted",
+    "when": "2026-10-18T15:54:29.740Z",
+    "info": "b8e80d0b-49ad-42b4-9191-52199d1fa6e9 List refresh updated"
+  },
+  {
+    "id": "c390315a-42a7-4e8d-ba1b-4e167196ff6c",
+    "action": "task.created",
+    "when": "2026-10-18T16:01:49.596Z",
+    "info": "9fc92df2-09e8-4279-8f67-486ce9cd5f5e Summary card check"
+  },
+  {
+    "id": "7a0af4d2-74dc-4527-b918-55ba4208f4dc",
+    "action": "task.updated",
+    "when": "2026-10-18T16:02:16.585Z",
+    "info": "9fc92df2-09e8-4279-8f67-486ce9cd5f5e Summary card check"
+  },
+  {
+    "id": "1304dd6f-231d-4787-b4c4-0d607abf8119",
+    "action": "task.deleted",
+    "when": "2026-10-18T16:02:40.098Z",
+    "info": "9fc92df2-09e8-4279-8f67-486ce9cd5f5e Summary card check"
   }
 ]

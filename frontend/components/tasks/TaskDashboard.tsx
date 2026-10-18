@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BoltIcon, CheckCircleIcon, ClipboardIcon, ProgressIcon } from "@/components/icons";
 import { CreateTaskDialog } from "@/components/tasks/CreateTaskDialog";
@@ -11,28 +11,30 @@ import { useTasks } from "@/hooks/useTasks";
 import { OPEN_CREATE_TASK } from "@/lib/taskEvents";
 import type { Task } from "@/types/api";
 
-const RECENT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
-
 type TaskDashboardProps = {
   initialTasks: Task[];
   initialLoadError: string;
 };
-
-function countRecent(tasks: Task[]) {
-  const cutoff = Date.now() - RECENT_WINDOW_MS;
-  return tasks.filter((task) => {
-    const time = new Date(task.updatedAt).getTime();
-    return Number.isFinite(time) && time >= cutoff;
-  }).length;
-}
 
 export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [createKey, setCreateKey] = useState(0);
   const [editing, setEditing] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState<Task | null>(null);
-  const { tasks, loading, loadError, updateErrors, savingTaskIds, fetchTasks, createTask, updateTask, deleteTask } =
-    useTasks(initialTasks, initialLoadError);
+  const {
+    tasks,
+    loading,
+    loadError,
+    updateErrors,
+    savingTaskIds,
+    summary,
+    summaryError,
+    fetchTasks,
+    fetchSummary,
+    createTask,
+    updateTask,
+    deleteTask,
+  } = useTasks(initialTasks, initialLoadError);
 
   useEffect(() => {
     const open = () => {
@@ -44,19 +46,13 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
     return () => window.removeEventListener(OPEN_CREATE_TASK, open);
   }, []);
 
-  const counts = useMemo(
-    () => ({
-      total: tasks.length,
-      todo: tasks.filter((task) => task.status === "todo").length,
-      progress: tasks.filter((task) => task.status === "in-progress").length,
-      done: tasks.filter((task) => task.status === "done").length,
-      recent: countRecent(tasks),
-    }),
-    [tasks]
-  );
+  const recentCount = summary?.recentActivityCount;
+  const cardValue = (value: number | undefined) => (value === undefined ? "–" : value);
 
   const recentText =
-    counts.recent === 1 ? "1 task was updated recently" : `${counts.recent} tasks were updated recently`;
+    recentCount === 1
+      ? "1 activity entry in the last 7 days"
+      : `${cardValue(recentCount)} activity entries in the last 7 days`;
 
   return (
     <section className="stack">
@@ -76,7 +72,7 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
           </span>
           <div>
             <p className="stat-label">Total Tasks</p>
-            <p className="stat-value">{counts.total}</p>
+            <p className="stat-value">{cardValue(summary?.total)}</p>
           </div>
         </article>
         <article className="stat-card">
@@ -85,7 +81,7 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
           </span>
           <div>
             <p className="stat-label">To Do</p>
-            <p className="stat-value">{counts.todo}</p>
+            <p className="stat-value">{cardValue(summary?.byStatus.todo)}</p>
           </div>
         </article>
         <article className="stat-card">
@@ -94,7 +90,7 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
           </span>
           <div>
             <p className="stat-label">In Progress</p>
-            <p className="stat-value">{counts.progress}</p>
+            <p className="stat-value">{cardValue(summary?.byStatus["in-progress"])}</p>
           </div>
         </article>
         <article className="stat-card">
@@ -103,7 +99,7 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
           </span>
           <div>
             <p className="stat-label">Done</p>
-            <p className="stat-value">{counts.done}</p>
+            <p className="stat-value">{cardValue(summary?.byStatus.done)}</p>
           </div>
         </article>
       </section>
@@ -113,8 +109,18 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
           <span className="banner-title">Recent Activity</span>
           <span className="banner-text">{recentText}</span>
         </span>
-        <span className="banner-count">{counts.recent}</span>
       </Link>
+
+      {summaryError ? (
+        <section className="panel error">
+          <p role="alert" className="alert-block">
+            {summaryError}
+          </p>
+          <button type="button" className="button" onClick={() => void fetchSummary()}>
+            Retry
+          </button>
+        </section>
+      ) : null}
 
       {loading ? (
         <section className="panel">
@@ -129,7 +135,14 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
           <p role="alert" className="alert-block">
             {loadError}
           </p>
-          <button type="button" className="button" onClick={fetchTasks}>
+          <button
+            type="button"
+            className="button"
+            onClick={() => {
+              void fetchTasks();
+              void fetchSummary();
+            }}
+          >
             Retry
           </button>
         </section>

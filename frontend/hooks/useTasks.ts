@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { requestJson } from "@/lib/apiClient";
-import type { Task, TaskFilter, TaskResponse, TaskStatus, TasksResponse } from "@/types/api";
+import type { Task, TaskFilter, TaskResponse, TaskStatus, TasksResponse, TasksSummary } from "@/types/api";
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
@@ -29,6 +29,8 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(initialLoadError);
   const [updateErrors, setUpdateErrors] = useState<Record<string, string>>({});
+  const [summary, setSummary] = useState<TasksSummary | null>(null);
+  const [summaryError, setSummaryError] = useState("");
   const savingTaskIdsRef = useRef<Set<string>>(new Set());
   const [savingTaskIds, setSavingTaskIds] = useState<Set<string>>(() => new Set());
   const filter = readTaskFilter(searchParams.get("status"));
@@ -49,9 +51,21 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
     [pathname, router, searchParams]
   );
 
-  const fetchTasks = useCallback(async () => {
+  const fetchSummary = useCallback(async () => {
     try {
-      setLoading(true);
+      setSummaryError("");
+      const body = await requestJson<TasksSummary>("/api/reports/tasks-summary");
+      setSummary(body);
+    } catch (error) {
+      setSummaryError(getErrorMessage(error, "Could not load the task summary."));
+    }
+  }, []);
+
+  const fetchTasks = useCallback(async (background = false) => {
+    try {
+      if (!background) {
+        setLoading(true);
+      }
       setLoadError("");
       setUpdateErrors({});
 
@@ -61,9 +75,19 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
     } catch (error) {
       setLoadError(getErrorMessage(error, "Could not load tasks right now."));
     } finally {
-      setLoading(false);
+      if (!background) {
+        setLoading(false);
+      }
     }
   }, []);
+
+  useEffect(() => {
+    const hasInitialData = initialTasks.length > 0 && initialLoadError === "";
+    void fetchTasks(hasInitialData);
+    void fetchSummary();
+    // Reload the list and the summary when the tasks page opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchTasks, fetchSummary]);
 
   const createTask = useCallback(
     async (title: string, status?: TaskStatus) => {
@@ -78,9 +102,9 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
       });
 
       setFilter("all");
-      await fetchTasks();
+      await Promise.all([fetchTasks(true), fetchSummary()]);
     },
-    [fetchTasks, setFilter]
+    [fetchSummary, fetchTasks, setFilter]
   );
 
   const runTaskChange = useCallback(async (taskId: string, work: () => Promise<void>, fallback: string) => {
@@ -124,17 +148,17 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
       await runTaskChange(
         taskId,
         async () => {
-          const body = await requestJson<TaskResponse>(`/api/tasks/${encodeURIComponent(taskId)}`, {
+          await requestJson<TaskResponse>(`/api/tasks/${encodeURIComponent(taskId)}`, {
             method: "PATCH",
             body: JSON.stringify(patch),
           });
 
-          setTasks((previous) => previous.map((task) => (task.id === taskId ? body.data : task)));
+          await Promise.all([fetchTasks(true), fetchSummary()]);
         },
         "Could not update the task."
       );
     },
-    [runTaskChange]
+    [fetchSummary, fetchTasks, runTaskChange]
   );
 
   const deleteTask = useCallback(
@@ -143,12 +167,12 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
         taskId,
         async () => {
           await requestJson<void>(`/api/tasks/${encodeURIComponent(taskId)}`, { method: "DELETE" });
-          setTasks((previous) => previous.filter((task) => task.id !== taskId));
+          await Promise.all([fetchTasks(true), fetchSummary()]);
         },
         "Could not delete the task."
       );
     },
-    [runTaskChange]
+    [fetchSummary, fetchTasks, runTaskChange]
   );
 
   const filteredTasks = useMemo(() => {
@@ -167,8 +191,11 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
     loadError,
     updateErrors,
     savingTaskIds,
+    summary,
+    summaryError,
     setFilter,
     fetchTasks,
+    fetchSummary,
     createTask,
     updateTask,
     deleteTask,

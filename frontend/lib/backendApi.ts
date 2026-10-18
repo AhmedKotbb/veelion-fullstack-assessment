@@ -8,6 +8,7 @@ import type {
   TaskResponse,
   TaskStatus,
   TasksResponse,
+  TasksSummary,
 } from "@/types/api";
 
 const BACKEND_TIMEOUT_MS = 5000;
@@ -132,6 +133,11 @@ export async function deleteTaskInBackend(taskId: string): Promise<void> {
   await requestBackend(`/tasks/${encodeURIComponent(taskId)}`, {
     method: "DELETE",
   });
+}
+
+export async function getTasksSummaryFromBackend(): Promise<TasksSummary> {
+  const response = await requestBackend("/reports/tasks-summary", undefined);
+  return (await response.json()) as TasksSummary;
 }
 
 export async function getActivityFromBackend(): Promise<ActivityLog[]> {
