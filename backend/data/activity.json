@@ -1,128 +1,128 @@
 [
   {
-    "id": "1775641197587",
-    "action": "demo",
-    "info": "smoke",
-    "when": "2026-04-08T09:39:57.587Z"
-  },
-  {
-    "id": "1775641478859",
-    "action": "refactor-check",
-    "info": "ok",
-    "when": "2026-04-08T09:44:38.859Z"
-  },
-  {
-    "id": "1775643236616",
-    "action": "added a task",
-    "info": "D",
-    "when": "2026-04-08T10:13:56.616Z"
-  },
-  {
-    "id": "7309cd3f-5516-4791-bcfa-25283c25e917",
-    "action": "task.updated",
-    "when": "2026-10-15T12:19:03.758Z",
-    "info": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb NEW TASK"
-  },
-  {
-    "id": "fa8342a5-9f5b-4701-95cf-abf94297aca0",
-    "action": "task.updated",
-    "when": "2026-10-15T12:19:25.282Z",
-    "info": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb NEW TASK"
-  },
-  {
-    "id": "4ea43b7f-2284-42d3-828e-8b699bbaf22f",
-    "action": "task.updated",
-    "when": "2026-10-15T12:26:04.302Z",
-    "info": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb NEW TASK"
-  },
-  {
-    "id": "4df006de-1b89-45bf-9f05-26724dc9dbc7",
+    "id": "ba8ea21f-f160-4efe-9df1-b74882b221f8",
     "action": "task.created",
-    "when": "2026-10-15T12:26:40.696Z",
-    "info": "35d131fc-30e2-47c6-a0dc-9800e91dd635 create report module"
+    "when": "2026-10-18T16:16:11.561Z",
+    "info": "29728fcd-9587-4835-b82f-3733565c9b05 Code review on the backend app"
   },
   {
-    "id": "e7746536-1b22-4d67-854a-134e77354956",
+    "id": "e0844993-bca5-4c6b-9ad0-969325fff726",
     "action": "task.created",
-    "when": "2026-10-15T12:26:58.683Z",
-    "info": "8fce9e9a-309b-4482-a94c-d42b5ce15a80 create report module1"
+    "when": "2026-10-18T16:16:53.470Z",
+    "info": "3d6985b0-2607-4982-b687-1b835d30fb31 Fix all backend issues"
   },
   {
-    "id": "4dd79e6f-7334-4444-9e1f-1f886d99a07a",
-    "action": "task.deleted",
-    "when": "2026-10-15T12:27:21.700Z",
-    "info": "8fce9e9a-309b-4482-a94c-d42b5ce15a80 create report module1"
-  },
-  {
-    "id": "c61912a7-b069-4b14-b710-ee28abdeb775",
+    "id": "bc187406-a320-48d1-a88b-2be507a9d463",
     "action": "task.created",
-    "when": "2026-10-17T11:56:41.013Z",
-    "info": "d7e4a1c5-448b-48f4-854b-c6e7853e7f2f fix the frontend issues"
+    "when": "2026-10-18T16:17:53.073Z",
+    "info": "1b3b4553-4e99-48a6-b8ae-2c60da1c0b4e Create GET /reports/tasks-summary API"
   },
   {
-    "id": "c7538953-4897-4723-a7ea-7d61b3469fb5",
-    "action": "task.updated",
-    "when": "2026-10-17T12:44:33.411Z",
-    "info": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb NEW TASK"
-  },
-  {
-    "id": "646b2bb8-fde7-4470-b144-38563821a9c7",
-    "action": "task.updated",
-    "when": "2026-10-17T12:44:45.195Z",
-    "info": "35d131fc-30e2-47c6-a0dc-9800e91dd635 create report module"
-  },
-  {
-    "id": "84813ec5-729c-4123-8149-3811121fc2ce",
-    "action": "task.updated",
-    "when": "2026-10-17T12:45:00.577Z",
-    "info": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb NEW TASK"
-  },
-  {
-    "id": "26c51e70-dee6-44f8-acfa-684ab0bd1bce",
-    "action": "task.updated",
-    "when": "2026-10-18T15:44:54.438Z",
-    "info": "d7e4a1c5-448b-48f4-854b-c6e7853e7f2f fix the frontend issues"
-  },
-  {
-    "id": "d43a4a2e-8e2e-4382-a0a6-fb969e9493d2",
-    "action": "task.updated",
-    "when": "2026-10-18T15:46:02.143Z",
-    "info": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb NEW TASK"
-  },
-  {
-    "id": "837fd125-30bb-4aba-a5a1-92d8fc9efd90",
+    "id": "72548a6b-362c-437a-a257-9e73962abf86",
     "action": "task.created",
-    "when": "2026-10-18T15:53:25.873Z",
-    "info": "b8e80d0b-49ad-42b4-9191-52199d1fa6e9 List refresh check"
+    "when": "2026-10-18T16:18:13.572Z",
+    "info": "5ec1d5c2-749c-4208-afe6-448ab30370eb Code review on the frontend app"
   },
   {
-    "id": "6d4ff56e-3686-434f-9f2e-22863bcc7a60",
-    "action": "task.updated",
-    "when": "2026-10-18T15:53:59.415Z",
-    "info": "b8e80d0b-49ad-42b4-9191-52199d1fa6e9 List refresh updated"
-  },
-  {
-    "id": "223762cd-e8bb-43a8-af23-c7e69593ff22",
-    "action": "task.deleted",
-    "when": "2026-10-18T15:54:29.740Z",
-    "info": "b8e80d0b-49ad-42b4-9191-52199d1fa6e9 List refresh updated"
-  },
-  {
-    "id": "c390315a-42a7-4e8d-ba1b-4e167196ff6c",
+    "id": "f0113a44-ee15-454a-b40c-2669f63610ff",
     "action": "task.created",
-    "when": "2026-10-18T16:01:49.596Z",
-    "info": "9fc92df2-09e8-4279-8f67-486ce9cd5f5e Summary card check"
+    "when": "2026-10-18T16:18:36.435Z",
+    "info": "e50ccb01-dd9e-4559-b4ee-9a43522bc2b9 Fix all frontend bugs"
   },
   {
-    "id": "7a0af4d2-74dc-4527-b918-55ba4208f4dc",
+    "id": "44bf805b-10fa-4d28-b02b-084b32d62b28",
+    "action": "task.created",
+    "when": "2026-10-18T16:20:21.612Z",
+    "info": "1bab149f-a6ab-4fe8-95b9-bf6909aa6c0e Call GET reports/tasks-summary API"
+  },
+  {
+    "id": "6c5dbbdc-3dea-4934-919e-08881cf8a2f0",
+    "action": "task.created",
+    "when": "2026-10-18T16:20:53.336Z",
+    "info": "36719c27-c47f-4a6f-addc-a00ca40cd1bb Do some UI enhancements"
+  },
+  {
+    "id": "63269401-5592-448c-982a-b9a8dae3202b",
     "action": "task.updated",
-    "when": "2026-10-18T16:02:16.585Z",
-    "info": "9fc92df2-09e8-4279-8f67-486ce9cd5f5e Summary card check"
+    "when": "2026-10-18T16:21:09.517Z",
+    "info": "29728fcd-9587-4835-b82f-3733565c9b05 Code review on the backend app"
   },
   {
-    "id": "1304dd6f-231d-4787-b4c4-0d607abf8119",
-    "action": "task.deleted",
-    "when": "2026-10-18T16:02:40.098Z",
-    "info": "9fc92df2-09e8-4279-8f67-486ce9cd5f5e Summary card check"
+    "id": "fab197ca-4c22-4c52-8e22-18ed2ab95edc",
+    "action": "task.updated",
+    "when": "2026-10-18T16:21:20.188Z",
+    "info": "3d6985b0-2607-4982-b687-1b835d30fb31 Fix all backend issues"
+  },
+  {
+    "id": "619eff6e-029b-45e7-898a-1a6fa1c4f587",
+    "action": "task.updated",
+    "when": "2026-10-18T16:21:32.485Z",
+    "info": "1b3b4553-4e99-48a6-b8ae-2c60da1c0b4e Create GET /reports/tasks-summary API"
+  },
+  {
+    "id": "2a37cbe8-142c-41fd-b0fc-660d43a7eace",
+    "action": "task.updated",
+    "when": "2026-10-18T16:21:38.443Z",
+    "info": "1b3b4553-4e99-48a6-b8ae-2c60da1c0b4e Create GET /reports/tasks-summary API"
+  },
+  {
+    "id": "b1cff31b-3028-4c47-ad1d-80b330f42a89",
+    "action": "task.updated",
+    "when": "2026-10-18T16:21:46.843Z",
+    "info": "3d6985b0-2607-4982-b687-1b835d30fb31 Fix all backend issues"
+  },
+  {
+    "id": "f69dbb22-0810-45f9-b5e4-5a7be01b09cb",
+    "action": "task.updated",
+    "when": "2026-10-18T16:21:54.170Z",
+    "info": "29728fcd-9587-4835-b82f-3733565c9b05 Code review on the backend app"
+  },
+  {
+    "id": "ae9c51aa-e66a-4fb7-8ec0-9dd0c86d250d",
+    "action": "task.updated",
+    "when": "2026-10-18T16:22:06.609Z",
+    "info": "5ec1d5c2-749c-4208-afe6-448ab30370eb Code review on the frontend app"
+  },
+  {
+    "id": "7c6046f9-46ff-490e-afd4-780a10bdef72",
+    "action": "task.updated",
+    "when": "2026-10-18T16:22:11.761Z",
+    "info": "e50ccb01-dd9e-4559-b4ee-9a43522bc2b9 Fix all frontend bugs"
+  },
+  {
+    "id": "04223d29-3738-49a3-aa41-25cfa16a06f9",
+    "action": "task.updated",
+    "when": "2026-10-18T16:22:21.707Z",
+    "info": "1bab149f-a6ab-4fe8-95b9-bf6909aa6c0e Call GET reports/tasks-summary API"
+  },
+  {
+    "id": "cbddc064-cb93-4bcf-b2c0-211dd4919a2f",
+    "action": "task.updated",
+    "when": "2026-10-18T16:22:30.851Z",
+    "info": "5ec1d5c2-749c-4208-afe6-448ab30370eb Code review on the frontend app"
+  },
+  {
+    "id": "eab8ac06-e8e0-4594-a54f-0e936a39eb6e",
+    "action": "task.updated",
+    "when": "2026-10-18T16:22:36.225Z",
+    "info": "e50ccb01-dd9e-4559-b4ee-9a43522bc2b9 Fix all frontend bugs"
+  },
+  {
+    "id": "d33b9aa4-ec06-4f8c-835a-291a1fcaa22f",
+    "action": "task.updated",
+    "when": "2026-10-18T16:22:52.239Z",
+    "info": "36719c27-c47f-4a6f-addc-a00ca40cd1bb Do some UI enhancements"
+  },
+  {
+    "id": "f8fee30b-48b9-40cc-b6f2-9ba061d6764d",
+    "action": "task.created",
+    "when": "2026-10-18T16:23:06.902Z",
+    "info": "27b6c8ac-988e-40f0-b1e4-9a797262a86a Do final tests"
+  },
+  {
+    "id": "21291a5d-8ec7-442b-b819-f19971d998e7",
+    "action": "task.created",
+    "when": "2026-10-18T16:23:21.798Z",
+    "info": "560d5236-34c6-4040-9a39-a41cbcc7cfa7 Update REVIEW.md File"
   }
 ]
