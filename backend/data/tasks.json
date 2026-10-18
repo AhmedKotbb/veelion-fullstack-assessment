@@ -23,9 +23,9 @@
   {
     "id": "4ffb1162-5776-47dd-aa4a-dc63fd6eb3fb",
     "title": "NEW TASK",
-    "status": "in-progress",
+    "status": "todo",
     "createdAt": "2026-10-14T10:29:12.879Z",
-    "updatedAt": "2026-10-17T12:45:00.576Z"
+    "updatedAt": "2026-10-18T15:46:02.141Z"
   },
   {
     "id": "35d131fc-30e2-47c6-a0dc-9800e91dd635",
@@ -37,8 +37,8 @@
   {
     "id": "d7e4a1c5-448b-48f4-854b-c6e7853e7f2f",
     "title": "fix the frontend issues",
-    "status": "todo",
+    "status": "in-progress",
     "createdAt": "2026-10-17T11:56:41.012Z",
-    "updatedAt": "2026-10-17T11:56:41.012Z"
+    "updatedAt": "2026-10-18T15:44:54.437Z"
   }
 ]

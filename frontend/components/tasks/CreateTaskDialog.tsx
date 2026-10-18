@@ -51,8 +51,8 @@ export function CreateTaskDialog({ open, onClose, onCreate }: CreateTaskDialogPr
     event.preventDefault();
 
     const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setError("Title is required.");
+    if (trimmedTitle.length < 4 || trimmedTitle.length > 200) {
+      setError("Title must be between 4 and 200 characters.");
       return;
     }
 
@@ -87,7 +87,7 @@ export function CreateTaskDialog({ open, onClose, onCreate }: CreateTaskDialogPr
     >
       <form onSubmit={handleSubmit} className="form-stack">
         <h2 id="create-task-heading" className="heading">
-          New task
+          Add task
         </h2>
 
         <label htmlFor="task-title" className="field">
@@ -98,7 +98,9 @@ export function CreateTaskDialog({ open, onClose, onCreate }: CreateTaskDialogPr
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             required
+            minLength={4}
             maxLength={200}
+            placeholder="Task title"
             autoFocus
             disabled={submitting}
           />
@@ -133,7 +135,7 @@ export function CreateTaskDialog({ open, onClose, onCreate }: CreateTaskDialogPr
             Cancel
           </button>
           <button type="submit" className="button primary" disabled={submitting}>
-            {submitting ? "Creating..." : "Submit"}
+            {submitting ? "Creating..." : "Add task"}
           </button>
         </div>
       </form>

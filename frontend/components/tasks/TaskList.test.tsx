@@ -21,20 +21,31 @@ const tasks: Task[] = [
 ];
 
 describe("TaskList", () => {
-  it("renders each task title and status", () => {
+  it("renders each task in its column", () => {
     render(
-      <TaskList tasks={tasks} savingTaskIds={new Set()} updateErrors={{}} onStatusChange={vi.fn()} />
+      <TaskList
+        tasks={tasks}
+        savingTaskIds={new Set()}
+        updateErrors={{}}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />
     );
 
+    expect(screen.getByRole("heading", { name: "Todo" })).toBeInTheDocument();
     expect(screen.getByText("A new task")).toBeInTheDocument();
-    expect(screen.getByText("To do")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "In-progress" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Done" })).toBeInTheDocument();
     expect(screen.getByText("fix the frontend issues")).toBeInTheDocument();
-    expect(screen.getByText("Done")).toBeInTheDocument();
   });
 
-  it("shows an empty message when the filter matches nothing", () => {
-    render(<TaskList tasks={[]} savingTaskIds={new Set()} updateErrors={{}} onStatusChange={vi.fn()} />);
+  it("shows empty columns when there are no tasks", () => {
+    render(
+      <TaskList tasks={[]} savingTaskIds={new Set()} updateErrors={{}} onUpdate={vi.fn()} onDelete={vi.fn()} />
+    );
 
-    expect(screen.getByText("No tasks match this filter.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Todo" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "In-progress" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Done" })).toBeInTheDocument();
   });
 });

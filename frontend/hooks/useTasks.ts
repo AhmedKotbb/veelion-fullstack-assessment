@@ -83,9 +83,9 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
     [fetchTasks, setFilter]
   );
 
-  const updateTaskStatus = useCallback(async (taskId: string, status: TaskStatus) => {
+  const runTaskChange = useCallback(async (taskId: string, work: () => Promise<void>, fallback: string) => {
     if (savingTaskIdsRef.current.has(taskId)) {
-      return;
+      throw new Error("This task is already saving.");
     }
 
     const started = new Set(savingTaskIdsRef.current);
@@ -103,17 +103,14 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
     });
 
     try {
-      const body = await requestJson<TaskResponse>(`/api/tasks/${encodeURIComponent(taskId)}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      });
-
-      setTasks((previous) => previous.map((task) => (task.id === taskId ? body.data : task)));
+      await work();
     } catch (error) {
+      const message = getErrorMessage(error, fallback);
       setUpdateErrors((current) => ({
         ...current,
-        [taskId]: getErrorMessage(error, "Could not update task status."),
+        [taskId]: message,
       }));
+      throw error instanceof Error ? error : new Error(message);
     } finally {
       const finished = new Set(savingTaskIdsRef.current);
       finished.delete(taskId);
@@ -121,6 +118,38 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
       setSavingTaskIds(finished);
     }
   }, []);
+
+  const updateTask = useCallback(
+    async (taskId: string, patch: { title?: string; status?: TaskStatus }) => {
+      await runTaskChange(
+        taskId,
+        async () => {
+          const body = await requestJson<TaskResponse>(`/api/tasks/${encodeURIComponent(taskId)}`, {
+            method: "PATCH",
+            body: JSON.stringify(patch),
+          });
+
+          setTasks((previous) => previous.map((task) => (task.id === taskId ? body.data : task)));
+        },
+        "Could not update the task."
+      );
+    },
+    [runTaskChange]
+  );
+
+  const deleteTask = useCallback(
+    async (taskId: string) => {
+      await runTaskChange(
+        taskId,
+        async () => {
+          await requestJson<void>(`/api/tasks/${encodeURIComponent(taskId)}`, { method: "DELETE" });
+          setTasks((previous) => previous.filter((task) => task.id !== taskId));
+        },
+        "Could not delete the task."
+      );
+    },
+    [runTaskChange]
+  );
 
   const filteredTasks = useMemo(() => {
     if (filter === "all") {
@@ -131,6 +160,7 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
   }, [tasks, filter]);
 
   return {
+    tasks,
     filteredTasks,
     filter,
     loading,
@@ -140,6 +170,7 @@ export function useTasks(initialTasks: Task[], initialLoadError: string) {
     setFilter,
     fetchTasks,
     createTask,
-    updateTaskStatus,
+    updateTask,
+    deleteTask,
   };
 }

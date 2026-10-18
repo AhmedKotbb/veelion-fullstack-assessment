@@ -113,16 +113,25 @@ export async function getTasksFromBackend(): Promise<Task[]> {
   return body.data;
 }
 
-export async function updateTaskInBackend(taskId: string, status: TaskStatus): Promise<Task> {
+export async function updateTaskInBackend(
+  taskId: string,
+  patch: { title?: string; status?: TaskStatus }
+): Promise<Task> {
   const response = await requestBackend(`/tasks/${encodeURIComponent(taskId)}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(patch),
   });
   const body = (await response.json()) as TaskResponse;
   return body.data;
+}
+
+export async function deleteTaskInBackend(taskId: string): Promise<void> {
+  await requestBackend(`/tasks/${encodeURIComponent(taskId)}`, {
+    method: "DELETE",
+  });
 }
 
 export async function getActivityFromBackend(): Promise<ActivityLog[]> {

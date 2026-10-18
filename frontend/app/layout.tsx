@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { AppHeader } from "@/components/AppHeader";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VeeLion Frontend Assessment",
-  description: "Task dashboard and activity feed modules",
+  title: "Task Tracker",
+  description: "Track tasks and recent activity",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -12,16 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <div className="shell">
-          <header className="site-header">
-            <Link href="/" className="site-brand">
-              VeeLion
-            </Link>
-            <nav className="site-nav" aria-label="Main">
-              <Link href="/tasks">Tasks</Link>
-              <Link href="/activity">Activity</Link>
-              <Link href="/reports">Reports</Link>
-            </nav>
-          </header>
+          <AppHeader />
           {children}
         </div>
       </body>

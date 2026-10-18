@@ -16,10 +16,10 @@ export default async function TasksPage() {
   }
 
   return (
-    <main className="stack">
+    <main className="page">
       <Suspense
         fallback={
-          <section className="card card-body">
+          <section className="panel">
             <p role="status" className="message">
               Loading tasks...
             </p>

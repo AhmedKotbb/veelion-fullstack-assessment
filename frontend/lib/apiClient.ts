@@ -37,5 +37,9 @@ export async function requestJson<T>(url: string, init?: RequestInit): Promise<T
     throw new ClientApiError(response.status, message);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return (await response.json()) as T;
 }
