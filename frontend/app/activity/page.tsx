@@ -1,16 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { requestJson } from "@/lib/apiClient";
 import type { ActivityLog } from "@/types/api";
 
+function sameActivity(left: ActivityLog[], right: ActivityLog[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((item, index) => {
+    const other = right[index];
+    return (
+      item.id === other.id &&
+      item.action === other.action &&
+      item.info === other.info &&
+      item.when === other.when
+    );
+  });
+}
+
+function messageFrom(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Could not load activity.";
+}
+
 export default function ActivityPage() {
   const [allActivity, setAllActivity] = useState<ActivityLog[]>([]);
-  const [shownActivity, setShownActivity] = useState<ActivityLog[]>([]);
   const [query, setQuery] = useState("");
-  const [tick, setTick] = useState(0);
-  const [forcedList, setForcedList] = useState<ActivityLog[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   function formatTimeA(value: string) {
@@ -47,63 +69,34 @@ export default function ActivityPage() {
     );
   }
 
-  useEffect(() => {
-    requestJson<ActivityLog[]>("/api/activity")
-      .then((data) => {
-        if (!Array.isArray(data)) {
-          setAllActivity([]);
-          setShownActivity([]);
-          setForcedList([]);
-          setError("Activity response was not a list.");
-          return;
-        }
+  const loadActivity = useCallback(async () => {
+    setLoading(true);
+    setError("");
 
-        setError("");
-        setAllActivity(data);
-        setShownActivity(data);
-        setForcedList(data);
-      })
-      .catch((caught: unknown) => {
-        const message =
-          caught instanceof Error && caught.message
-            ? caught.message
-            : "Could not load activity.";
+    try {
+      const data = await requestJson<ActivityLog[]>("/api/activity");
+
+      if (!Array.isArray(data)) {
         setAllActivity([]);
-        setShownActivity([]);
-        setForcedList([]);
-        setError(message);
-      });
-  }, []);
+        setError("Activity response was not a list.");
+        return;
+      }
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setTick((value) => value + 1);
-    }, 1400);
-
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    const a = applyFilterA(allActivity, query);
-    const b = applyFilterB(a, query);
-    setShownActivity(b);
-  }, [query, allActivity, tick]);
-
-  useEffect(() => {
-    if (tick % 2 === 0) {
-      setForcedList([...shownActivity]);
-    } else {
-      setForcedList(shownActivity.map((item) => ({ ...item })));
+      setAllActivity((current) => (sameActivity(current, data) ? current : data));
+      setError("");
+    } catch (caught) {
+      setAllActivity([]);
+      setError(messageFrom(caught));
+    } finally {
+      setLoading(false);
     }
-  }, [shownActivity, tick]);
+  }, []);
 
-  const stats = useMemo(() => {
-    return {
-      total: allActivity.length,
-      visible: shownActivity.length,
-      everySecondTick: tick,
-    };
-  }, [allActivity.length, shownActivity.length, tick]);
+  useEffect(() => {
+    void loadActivity();
+  }, [loadActivity]);
+
+  const visibleActivity = applyFilterB(applyFilterA(allActivity, query), query);
 
   return (
     <main className="stack">
@@ -114,7 +107,25 @@ export default function ActivityPage() {
       </nav>
 
       <section className="card" style={{ padding: "1rem" }}>
-        <h1 style={{ marginTop: 0, marginBottom: "0.5rem" }}>Activity Feed</h1>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "0.8rem",
+            marginBottom: "0.75rem",
+          }}
+        >
+          <h1 style={{ margin: 0 }}>Activity Feed</h1>
+          <button
+            type="button"
+            className="button primary"
+            onClick={() => void loadActivity()}
+            disabled={loading}
+          >
+            Sync
+          </button>
+        </div>
 
         <input
           className="input"
@@ -124,33 +135,52 @@ export default function ActivityPage() {
         />
       </section>
 
-      <section className="card" style={{ padding: "1rem" }}>
-        <small style={{ color: "var(--muted)" }}>
-          Total: {stats.total} | Visible: {stats.visible}
-        </small>
-      </section>
+      {loading ? (
+        <section className="card" style={{ padding: "1rem" }}>
+          <p role="status" style={{ margin: 0 }}>
+            Loading activity...
+          </p>
+        </section>
+      ) : null}
 
       {error ? (
         <section className="card" style={{ padding: "1rem", borderColor: "#e3b4c0", background: "#fff8fa" }}>
-          <p role="alert" style={{ margin: 0, color: "var(--danger)" }}>
+          <p role="alert" style={{ marginTop: 0, marginBottom: "0.75rem", color: "var(--danger)" }}>
             {error}
           </p>
+          <button type="button" className="button" onClick={() => void loadActivity()}>
+            Retry
+          </button>
         </section>
-      ) : (
-        <section className="card" style={{ padding: "1rem" }}>
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: "0.7rem" }}>
-            {forcedList.map((item) => (
-              <li key={item.id} style={{ borderBottom: "1px solid var(--border)", paddingBottom: "0.6rem" }}>
-                <div style={{ fontWeight: 600 }}>{item.action || "(no action)"}</div>
-                <div>{item.info || "(no info)"}</div>
-                <small style={{ color: "var(--muted)" }}>{formatTimeA(item.when)}</small>
-                <br />
-                <small style={{ color: "var(--muted)" }}>{formatTimeB(item.when)}</small>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      ) : null}
+
+      {!loading && !error ? (
+        <>
+          <section className="card" style={{ padding: "1rem" }}>
+            <small style={{ color: "var(--muted)" }}>
+              Total: {allActivity.length} | Visible: {visibleActivity.length}
+            </small>
+          </section>
+
+          <section className="card" style={{ padding: "1rem" }}>
+            {allActivity.length === 0 ? (
+              <p style={{ margin: 0, color: "var(--muted)" }}>No activity yet</p>
+            ) : (
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: "0.7rem" }}>
+                {visibleActivity.map((item) => (
+                  <li key={item.id} style={{ borderBottom: "1px solid var(--border)", paddingBottom: "0.6rem" }}>
+                    <div style={{ fontWeight: 600 }}>{item.action || "(no action)"}</div>
+                    <div>{item.info || "(no info)"}</div>
+                    <small style={{ color: "var(--muted)" }}>{formatTimeA(item.when)}</small>
+                    <br />
+                    <small style={{ color: "var(--muted)" }}>{formatTimeB(item.when)}</small>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
+      ) : null}
     </main>
   );
 }
