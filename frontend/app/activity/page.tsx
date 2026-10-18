@@ -11,6 +11,7 @@ export default function ActivityPage() {
   const [query, setQuery] = useState("");
   const [tick, setTick] = useState(0);
   const [forcedList, setForcedList] = useState<ActivityLog[]>([]);
+  const [error, setError] = useState("");
 
   function formatTimeA(value: string) {
     return new Date(value).toLocaleString();
@@ -49,15 +50,28 @@ export default function ActivityPage() {
   useEffect(() => {
     requestJson<ActivityLog[]>("/api/activity")
       .then((data) => {
-        const list = Array.isArray(data) ? data : [];
-        setAllActivity(list);
-        setShownActivity(list);
-        setForcedList(list);
+        if (!Array.isArray(data)) {
+          setAllActivity([]);
+          setShownActivity([]);
+          setForcedList([]);
+          setError("Activity response was not a list.");
+          return;
+        }
+
+        setError("");
+        setAllActivity(data);
+        setShownActivity(data);
+        setForcedList(data);
       })
-      .catch(() => {
+      .catch((caught: unknown) => {
+        const message =
+          caught instanceof Error && caught.message
+            ? caught.message
+            : "Could not load activity.";
         setAllActivity([]);
         setShownActivity([]);
         setForcedList([]);
+        setError(message);
       });
   }, []);
 
@@ -116,19 +130,27 @@ export default function ActivityPage() {
         </small>
       </section>
 
-      <section className="card" style={{ padding: "1rem" }}>
-        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: "0.7rem" }}>
-          {forcedList.map((item) => (
-            <li key={item.id} style={{ borderBottom: "1px solid var(--border)", paddingBottom: "0.6rem" }}>
-              <div style={{ fontWeight: 600 }}>{item.action || "(no action)"}</div>
-              <div>{item.info || "(no info)"}</div>
-              <small style={{ color: "var(--muted)" }}>{formatTimeA(item.when)}</small>
-              <br />
-              <small style={{ color: "var(--muted)" }}>{formatTimeB(item.when)}</small>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {error ? (
+        <section className="card" style={{ padding: "1rem", borderColor: "#e3b4c0", background: "#fff8fa" }}>
+          <p role="alert" style={{ margin: 0, color: "var(--danger)" }}>
+            {error}
+          </p>
+        </section>
+      ) : (
+        <section className="card" style={{ padding: "1rem" }}>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: "0.7rem" }}>
+            {forcedList.map((item) => (
+              <li key={item.id} style={{ borderBottom: "1px solid var(--border)", paddingBottom: "0.6rem" }}>
+                <div style={{ fontWeight: 600 }}>{item.action || "(no action)"}</div>
+                <div>{item.info || "(no info)"}</div>
+                <small style={{ color: "var(--muted)" }}>{formatTimeA(item.when)}</small>
+                <br />
+                <small style={{ color: "var(--muted)" }}>{formatTimeB(item.when)}</small>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }
