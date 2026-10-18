@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestJson } from "@/lib/apiClient";
 import type { ActivityLog } from "@/types/api";
@@ -83,23 +82,9 @@ export default function ActivityPage() {
 
   return (
     <main className="stack">
-      <nav>
-        <Link href="/" className="button">
-          Back
-        </Link>
-      </nav>
-
-      <section className="card" style={{ padding: "1rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "0.8rem",
-            marginBottom: "0.75rem",
-          }}
-        >
-          <h1 style={{ margin: 0 }}>Activity Feed</h1>
+      <section className="card card-body">
+        <div className="panel-header panel-header-spaced">
+          <h1 className="heading">Activity Feed</h1>
           <button
             type="button"
             className="button primary"
@@ -120,16 +105,16 @@ export default function ActivityPage() {
       </section>
 
       {loading ? (
-        <section className="card" style={{ padding: "1rem" }}>
-          <p role="status" style={{ margin: 0 }}>
+        <section className="card card-body">
+          <p role="status" className="message">
             Loading activity...
           </p>
         </section>
       ) : null}
 
       {error ? (
-        <section className="card" style={{ padding: "1rem", borderColor: "#e3b4c0", background: "#fff8fa" }}>
-          <p role="alert" style={{ marginTop: 0, marginBottom: "0.75rem", color: "var(--danger)" }}>
+        <section className="card card-body error-box">
+          <p role="alert" className="alert-block">
             {error}
           </p>
           <button type="button" className="button" onClick={() => void loadActivity()}>
@@ -140,24 +125,24 @@ export default function ActivityPage() {
 
       {!loading && !error ? (
         <>
-          <section className="card" style={{ padding: "1rem" }}>
-            <small style={{ color: "var(--muted)" }}>
+          <section className="card card-body">
+            <small className="muted">
               Total: {activity.length} | Visible: {visibleActivity.length}
             </small>
           </section>
 
-          <section className="card" style={{ padding: "1rem" }}>
+          <section className="card card-body">
             {activity.length === 0 ? (
-              <p style={{ margin: 0, color: "var(--muted)" }}>No activity yet</p>
+              <p className="message muted">No activity yet</p>
             ) : visibleActivity.length === 0 ? (
-              <p style={{ margin: 0, color: "var(--muted)" }}>No activity matches your search</p>
+              <p className="message muted">No activity matches your search</p>
             ) : (
-              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: "0.7rem" }}>
+              <ul className="list">
                 {visibleActivity.map((item) => (
-                  <li key={item.id} style={{ borderBottom: "1px solid var(--border)", paddingBottom: "0.6rem" }}>
-                    <div style={{ fontWeight: 600 }}>{item.action || "(no action)"}</div>
+                  <li key={item.id} className="activity-item">
+                    <div className="strong">{item.action || "(no action)"}</div>
                     <div>{item.info || "(no info)"}</div>
-                    <small style={{ color: "var(--muted)" }}>{formatTime(item.when)}</small>
+                    <small className="muted">{formatTime(item.when)}</small>
                   </li>
                 ))}
               </ul>

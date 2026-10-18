@@ -11,15 +11,15 @@ type TaskListProps = {
 export function TaskList({ tasks, savingTaskIds, updateErrors, onStatusChange }: TaskListProps) {
   if (tasks.length === 0) {
     return (
-      <section className="card" style={{ padding: "1rem" }}>
-        <p style={{ margin: 0, color: "var(--muted)" }}>No tasks match this filter.</p>
+      <section className="card card-body">
+        <p className="message muted">No tasks match this filter.</p>
       </section>
     );
   }
 
   return (
     <section aria-label="Task list">
-      <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: "0.7rem" }}>
+      <ul className="list">
         {tasks.map((task) => (
           <TaskItem
             key={task.id}

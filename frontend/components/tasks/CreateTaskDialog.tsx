@@ -85,12 +85,12 @@ export function CreateTaskDialog({ open, onClose, onCreate }: CreateTaskDialogPr
         }
       }}
     >
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.85rem" }}>
-        <h2 id="create-task-heading" style={{ margin: 0 }}>
+      <form onSubmit={handleSubmit} className="form-stack">
+        <h2 id="create-task-heading" className="heading">
           New task
         </h2>
 
-        <label htmlFor="task-title" style={{ display: "grid", gap: "0.35rem", fontSize: "0.9rem" }}>
+        <label htmlFor="task-title" className="field">
           Title
           <input
             id="task-title"
@@ -104,7 +104,7 @@ export function CreateTaskDialog({ open, onClose, onCreate }: CreateTaskDialogPr
           />
         </label>
 
-        <label htmlFor="task-status" style={{ display: "grid", gap: "0.35rem", fontSize: "0.9rem" }}>
+        <label htmlFor="task-status" className="field">
           Status (optional)
           <select
             id="task-status"
@@ -123,12 +123,12 @@ export function CreateTaskDialog({ open, onClose, onCreate }: CreateTaskDialogPr
         </label>
 
         {error ? (
-          <p role="alert" style={{ margin: 0, color: "var(--danger)" }}>
+          <p role="alert" className="alert">
             {error}
           </p>
         ) : null}
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+        <div className="actions actions-end">
           <button type="button" className="button" onClick={handleClose} disabled={submitting}>
             Cancel
           </button>

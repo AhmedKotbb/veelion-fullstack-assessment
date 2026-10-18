@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { ApiError, getTasksFromBackend } from "@/lib/backendApi";
 import { TaskDashboard } from "@/components/tasks/TaskDashboard";
@@ -18,15 +17,10 @@ export default async function TasksPage() {
 
   return (
     <main className="stack">
-      <nav>
-        <Link href="/" className="button">
-          Back
-        </Link>
-      </nav>
       <Suspense
         fallback={
-          <section className="card" style={{ padding: "1rem" }}>
-            <p role="status" style={{ margin: 0 }}>
+          <section className="card card-body">
+            <p role="status" className="message">
               Loading tasks...
             </p>
           </section>

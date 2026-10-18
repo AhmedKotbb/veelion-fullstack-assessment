@@ -34,17 +34,8 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
 
   return (
     <section className="stack">
-      <header
-        className="card"
-        style={{
-          padding: "1rem",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "0.8rem",
-        }}
-      >
-        <h1 style={{ margin: 0 }}>Task Dashboard</h1>
+      <header className="card card-body panel-header">
+        <h1 className="heading">Task Dashboard</h1>
         <button
           type="button"
           className="button primary"
@@ -68,16 +59,16 @@ export function TaskDashboard({ initialTasks, initialLoadError }: TaskDashboardP
       <StatusFilter value={filter} onChange={setFilter} />
 
       {loading ? (
-        <section className="card" style={{ padding: "1rem" }}>
-          <p role="status" style={{ margin: 0 }}>
+        <section className="card card-body">
+          <p role="status" className="message">
             Loading tasks...
           </p>
         </section>
       ) : null}
 
       {loadError ? (
-        <section className="card" style={{ padding: "1rem", borderColor: "#e3b4c0", background: "#fff8fa" }}>
-          <p role="alert" style={{ marginTop: 0, marginBottom: "0.75rem", color: "var(--danger)" }}>
+        <section className="card card-body error-box">
+          <p role="alert" className="alert-block">
             {loadError}
           </p>
           <button type="button" className="button" onClick={fetchTasks}>

@@ -29,24 +29,15 @@ export function TaskItem({ task, busy, error, onStatusChange }: TaskItemProps) {
   const moves = NEXT_STATUSES[task.status] ?? [];
 
   return (
-    <li
-      className="card"
-      style={{
-        padding: "0.85rem",
-        display: "grid",
-        gap: "0.4rem",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "0.8rem", alignItems: "start" }}>
-        <p style={{ margin: 0, fontWeight: 600 }}>{task.title}</p>
+    <li className="card task-card">
+      <div className="row row-start">
+        <p className="strong">{task.title}</p>
         <span className="badge">{TASK_STATUS_LABELS[task.status] ?? task.status}</span>
       </div>
 
-      <small style={{ color: "var(--muted)" }}>
-        Updated: {new Date(task.updatedAt).toLocaleString()}
-      </small>
+      <small className="muted">Updated: {new Date(task.updatedAt).toLocaleString()}</small>
 
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+      <div className="actions">
         {busy ? (
           <button type="button" className="button" disabled>
             Saving...
@@ -67,7 +58,7 @@ export function TaskItem({ task, busy, error, onStatusChange }: TaskItemProps) {
       </div>
 
       {error ? (
-        <p role="alert" style={{ margin: 0, color: "var(--danger)" }}>
+        <p role="alert" className="alert">
           {error}
         </p>
       ) : null}
