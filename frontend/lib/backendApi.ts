@@ -126,6 +126,6 @@ export async function updateTaskInBackend(taskId: string, status: TaskStatus): P
 }
 
 export async function getActivityFromBackend(): Promise<ActivityLog[]> {
-  const response = await requestBackend("/activity", undefined);
+  const response = await requestBackend("/activity?limit=50", undefined);
   return (await response.json()) as ActivityLog[];
 }

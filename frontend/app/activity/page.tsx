@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestJson } from "@/lib/apiClient";
 import type { ActivityLog } from "@/types/api";
 
@@ -29,45 +29,28 @@ function messageFrom(error: unknown): string {
   return "Could not load activity.";
 }
 
+function formatTime(value: string) {
+  return new Date(value).toLocaleString();
+}
+
+function filterActivity(items: ActivityLog[], text: string) {
+  const query = text.trim().toLowerCase();
+  if (!query) {
+    return items;
+  }
+
+  return items.filter(
+    (item) =>
+      (item.action || "").toLowerCase().includes(query) ||
+      (item.info || "").toLowerCase().includes(query)
+  );
+}
+
 export default function ActivityPage() {
-  const [allActivity, setAllActivity] = useState<ActivityLog[]>([]);
+  const [activity, setActivity] = useState<ActivityLog[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  function formatTimeA(value: string) {
-    return new Date(value).toLocaleString();
-  }
-
-  function formatTimeB(value: string) {
-    return new Date(value).toLocaleString();
-  }
-
-  function applyFilterA(items: ActivityLog[], text: string) {
-    if (!text) {
-      return items;
-    }
-
-    const lower = text.toLowerCase();
-    return items.filter(
-      (item) =>
-        (item.action || "").toLowerCase().includes(lower) ||
-        (item.info || "").toLowerCase().includes(lower)
-    );
-  }
-
-  function applyFilterB(items: ActivityLog[], text: string) {
-    if (!text) {
-      return items;
-    }
-
-    const lower = text.toLowerCase();
-    return items.filter(
-      (item) =>
-        (item.action || "").toLowerCase().indexOf(lower) !== -1 ||
-        (item.info || "").toLowerCase().indexOf(lower) !== -1
-    );
-  }
 
   const loadActivity = useCallback(async () => {
     setLoading(true);
@@ -77,15 +60,15 @@ export default function ActivityPage() {
       const data = await requestJson<ActivityLog[]>("/api/activity");
 
       if (!Array.isArray(data)) {
-        setAllActivity([]);
+        setActivity([]);
         setError("Activity response was not a list.");
         return;
       }
 
-      setAllActivity((current) => (sameActivity(current, data) ? current : data));
+      setActivity((current) => (sameActivity(current, data) ? current : data));
       setError("");
     } catch (caught) {
-      setAllActivity([]);
+      setActivity([]);
       setError(messageFrom(caught));
     } finally {
       setLoading(false);
@@ -96,7 +79,7 @@ export default function ActivityPage() {
     void loadActivity();
   }, [loadActivity]);
 
-  const visibleActivity = applyFilterB(applyFilterA(allActivity, query), query);
+  const visibleActivity = useMemo(() => filterActivity(activity, query), [activity, query]);
 
   return (
     <main className="stack">
@@ -132,6 +115,7 @@ export default function ActivityPage() {
           placeholder="Search activity"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
+          aria-label="Search activity"
         />
       </section>
 
@@ -158,22 +142,22 @@ export default function ActivityPage() {
         <>
           <section className="card" style={{ padding: "1rem" }}>
             <small style={{ color: "var(--muted)" }}>
-              Total: {allActivity.length} | Visible: {visibleActivity.length}
+              Total: {activity.length} | Visible: {visibleActivity.length}
             </small>
           </section>
 
           <section className="card" style={{ padding: "1rem" }}>
-            {allActivity.length === 0 ? (
+            {activity.length === 0 ? (
               <p style={{ margin: 0, color: "var(--muted)" }}>No activity yet</p>
+            ) : visibleActivity.length === 0 ? (
+              <p style={{ margin: 0, color: "var(--muted)" }}>No activity matches your search</p>
             ) : (
               <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: "0.7rem" }}>
                 {visibleActivity.map((item) => (
                   <li key={item.id} style={{ borderBottom: "1px solid var(--border)", paddingBottom: "0.6rem" }}>
                     <div style={{ fontWeight: 600 }}>{item.action || "(no action)"}</div>
                     <div>{item.info || "(no info)"}</div>
-                    <small style={{ color: "var(--muted)" }}>{formatTimeA(item.when)}</small>
-                    <br />
-                    <small style={{ color: "var(--muted)" }}>{formatTimeB(item.when)}</small>
+                    <small style={{ color: "var(--muted)" }}>{formatTime(item.when)}</small>
                   </li>
                 ))}
               </ul>
